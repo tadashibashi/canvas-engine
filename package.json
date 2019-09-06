@@ -1,0 +1,27 @@
+{
+  "name": "canvasengine",
+  "version": "0.0.1",
+  "description": "Modular Component-based Engine for HTML5 Canvas",
+  "main": "index.html",
+  "dependencies": {
+    "typescript": "^3.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tadashibashi/canvas-engine.git"
+  },
+  "keywords": [
+    "canvas",
+    "game"
+  ],
+  "author": "Aaron Ishibashi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tadashibashi/canvas-engine/issues"
+  },
+  "homepage": "https://github.com/tadashibashi/canvas-engine#readme"
+}
