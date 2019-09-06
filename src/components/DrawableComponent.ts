@@ -23,4 +23,9 @@ export abstract class DrawableComponent extends Component {
 	}
 
 	abstract draw(gameTime: GameTime): void;
+
+	destroy() {
+		this.onDrawOrderChanged = [];
+		super.destroy();
+	}
 }
