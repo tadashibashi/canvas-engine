@@ -4,9 +4,15 @@ import { GameTime } from '../core/GameTime';
 
 
 
-export class ComponentManager {
+export class ComponentManager extends DrawableComponent {
 	private components: Component[] = [];
 	private drawList: DrawableComponent[] = [];
+
+	awake() {
+		this.forEach(c => c.awake());
+		this.sortUpdateListOrder();
+		this.sortDrawListOrder();
+	}
 
 	/**
 	 * Gets a component contained by this manager. Returns null if none.
@@ -40,20 +46,7 @@ export class ComponentManager {
 		return this;	
 	}
 
-	load() {
-		this.forEach((c) => c.awake());
-		this.sortUpdateListOrder();
-		this.sortDrawListOrder();
-	}
-
 	forEach(fn: (component: Component, index: number, components: Component[]) => void): void {
-		let components = this.components;
-		for (let i=0; i<components.length; i++) {
-			fn(components[i], i, components);
-		}
-	}	
-
-	forEachUpdatable(fn: (component: Component, index: number, components: Component[]) => void): void {
 		let components = this.components;
 		for (let i=0; i<components.length; i++) {
 			fn(components[i], i, components);
@@ -75,14 +68,20 @@ export class ComponentManager {
 	}
 
 	update(gameTime: GameTime) {
-		this.forEachUpdatable((c) => {
-			c.update(gameTime);
+		this.forEach((c) => {
+			if (c.isEnabled) c.update(gameTime);
 		});
 	}
 
 	draw(gameTime: GameTime) {
 		this.forEachDrawable((c) => {
-			c.draw(gameTime);
+			if (c.isEnabled) c.draw(gameTime);
 		});
+	}
+
+	destroy() {
+		this.forEach(c => c.destroy());
+		this.components = [];
+		this.drawList = [];
 	}
 }

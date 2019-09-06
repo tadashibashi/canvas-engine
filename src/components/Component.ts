@@ -8,7 +8,7 @@ export abstract class Component {
 	 * You can make conditionals for testing purposes with this variable.
 	 */
 	isDebug = false;
-	
+	isEnabled = true;
 	manager: ComponentManager;
 
 	/**
@@ -35,7 +35,8 @@ export abstract class Component {
 	}
 
 	/**
-	 * Components can safely make associations with other components here.
+	 * Components can safely make associations with other components here. 
+	 * Make sure to call all owned ComponentManager's awake() here.
 	 */
 	awake(): void {};
 
