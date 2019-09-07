@@ -4,7 +4,7 @@ import { GameObject } from '../gameobjects/GameObject';
 
 export class Transform extends Component {
 	private children: GameObject[] = [];
-	readonly position: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0}
+	readonly position: Vector3 = {x: 0, y: 0, z: 0}
 	setPosition(x: number, y: number, z = 0) {
 		let pos = this.position;
 		pos.x = x;
