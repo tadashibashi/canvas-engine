@@ -8,7 +8,7 @@ export class Pointer extends InputSource<PointerEvent> {
 	scale: number;
 
 	constructor() {
-		super(0);
+		super(1000);
 	}
 
 	awake() {

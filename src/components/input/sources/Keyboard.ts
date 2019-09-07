@@ -3,7 +3,7 @@ import { InputSource } from './InputSource';
 export class Keyboard extends InputSource<KeyboardEvent> {
 
 	constructor() {
-		super(-1);
+		super(999);
 	}
 
 	awake() {
