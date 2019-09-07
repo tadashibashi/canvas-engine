@@ -1,4 +1,4 @@
-import { GameTime } from '../../GameTime';
+import { GameTime } from '../../core/GameTime';
 
 export class Tween {
 	private finish?: () => void;

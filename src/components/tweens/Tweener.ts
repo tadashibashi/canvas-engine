@@ -1,6 +1,6 @@
 import { Component } from '../Component';
 import { Tween } from './Tween';
-import { GameTime } from '../../GameTime';
+import { GameTime } from '../../core/GameTime';
 
 
 export class Tweener extends Component {
@@ -9,7 +9,7 @@ export class Tweener extends Component {
 	private isPaused: boolean = false;
 
 	constructor() {
-		super(true, false);
+		super();
 	}
 	/**
 	 * A short-hand way of creating and firing a tween at once
