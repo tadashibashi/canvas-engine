@@ -8,8 +8,11 @@ export class ComponentManager extends DrawableComponent {
 	private components: Component[] = [];
 	private drawList: DrawableComponent[] = [];
 
+
 	awake() {
-		this.forEach(c => c.awake());
+		this.forEach(c => {
+			c.awake();
+		});
 		this.sortUpdateListOrder();
 		this.sortDrawListOrder();
 	}
@@ -42,6 +45,8 @@ export class ComponentManager extends DrawableComponent {
 			component.onUpdateOrderChanged.push(this.sortUpdateListOrder);
 			this.components.push(component);
 		}
+		// Cache ComponentManager to Component to enable access to other components
+		component.manager = this;
 
 		return this;	
 	}
@@ -70,6 +75,12 @@ export class ComponentManager extends DrawableComponent {
 	update(gameTime: GameTime) {
 		this.forEach((c) => {
 			if (c.isEnabled) c.update(gameTime);
+		});
+	}
+
+	preUpdate(gameTime: GameTime) {
+		this.forEach((c) => {
+			c.preUpdate(gameTime);
 		});
 	}
 
