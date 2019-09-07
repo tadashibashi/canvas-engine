@@ -33,7 +33,7 @@ export class TypeContainer {
 		if (index === -1) {
 			this.arr.push(item);
 		} else {
-			console.log('Warning! TypeContainer already contains an item of type: ' + type.name + '. Aborting set function.');
+			console.log('Warning! TypeContainer already contains an item of type: ' + item.constructor.name + '. Aborting set function.');
 		}
 		return this;
 	}
