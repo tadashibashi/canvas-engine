@@ -21,9 +21,9 @@ export class StateMachine<T> extends Component {
 
   update(gameTime: GameTime): void {
     let state = this.state;
-    if (state && this.isPlaying && state.update) {
+    if (state && this.isPlaying && state.has('update')) {
     	this._timeInState += gameTime.deltaSec;
-      state.update.call(this.context, gameTime, this._timeInState);
+      state.run('update', this.context, gameTime, this._timeInState);
     }
   }
 
@@ -66,9 +66,9 @@ export class StateMachine<T> extends Component {
     // If there is already a state playing fire the old state's exit event
     if (this.isPlaying === true) {
     	// and this state exists, and an exit function exists on this state
-      if (this.state && this.state.exit) {
+      if (this.state && this.state.has('exit')) {
       	// Fire the state's exit event
-        this.state.exit.call(this.context, key, this._timeInState, data);
+        this.state.run('exit', this.context, key, this._timeInState, data);
         if (this.isDebug) {
 	        console.log(`[${this.context.constructor.name} 
 	        	StateMachine] Exiting state <- ${this.state.key}`);
@@ -81,8 +81,8 @@ export class StateMachine<T> extends Component {
     this._timeInState = 0;
     this.state = this.states.get(key);
     if (this.state) {
-    	if (this.state.enter) {
-    		this.state.enter.call(this.context, lastStateKey? lastStateKey : undefined, data);
+    	if (this.state.has('enter')) {
+    		this.state.run('enter', this.context, lastStateKey? lastStateKey : undefined, data);
     		if (this.isDebug) {
     			console.log(`[${this.context.constructor.name} StateMachine] Entering state -> ${this.state.key}`);
     		}
@@ -121,8 +121,8 @@ export class StateMachine<T> extends Component {
   stop(...params: any) {
     if (this.isPlaying) {
       this.isPlaying = false;
-      if (this.state && this.state.exit) {
-        this.state.exit.call(this.context, null, this._timeInState, params);
+      if (this.state && this.state.has('exit')) {
+        this.state.run('exit', this.context, null, this._timeInState, params);
         if (this.isDebug) console.log(`[${this.context.constructor.name} StateMachine] 
         	Exiting state <- ${this.state.key}`);
       }   
