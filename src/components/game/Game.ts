@@ -4,15 +4,17 @@ import { ComponentManager } from '../ComponentManager';
 import { TypeContainer } from '../../core/TypeContainer';
 import { InputManager } from '../input/InputManager';
 import { Pointer } from '../input/sources/Pointer';
-import { PointerCodes, Input } from '../input/types/Types';
+import { PointerCodes, Input, KeyCodes } from '../input/types/Types';
 import { Canvas } from '../../core/Canvas';
+import { Keyboard } from '../input/sources/Keyboard';
 
 
 export interface GameConfig {
-	canvasID: string;
-	width: number;
-	height: number;
-	pixelated: boolean
+	readonly canvasID: string;
+	readonly width?: number;
+	readonly height?: number;
+	readonly backgroundColor?: string;
+	readonly pixelated: boolean
 }
 
 export class Game extends DrawableComponent {
@@ -20,11 +22,11 @@ export class Game extends DrawableComponent {
 	readonly services = new TypeContainer();
 	readonly components = new ComponentManager();
 	left: Input;
-	constructor(config: GameConfig) {
+	constructor(public readonly config: GameConfig) {
 		super();
 		Game.engine = this;
 
-		let canvas = new Canvas('#' + config.canvasID, 320, 180);
+		let canvas = new Canvas('#' + config.canvasID, 320, 180, config.backgroundColor);
 
 		let input = new InputManager();
 		
@@ -34,36 +36,34 @@ export class Game extends DrawableComponent {
 
 		this.components
 			.add(input);
+
 	} 
 
 	awake() {
-		this.left = this.services.get(InputManager).pointer.add(PointerCodes.LEFT);
+		this.left = this.services.get(InputManager).keyboard.add(KeyCodes.LEFT_ARROW);
 		this.components.awake();
 	}
 
 	update(gameTime: GameTime) {
 		let input = this.services.get(InputManager);
-		let pointer = input.sources.get(Pointer);
+		let keyboard = input.sources.get(Keyboard);
 		input.preUpdate(gameTime);
 		
-		
 		//console.log(pointer.position.x, pointer.position.lastX);
-		if (pointer.justDown(this.left)) {
-			console.log('hello, you clicked left!');
+		if (keyboard.justDown(this.left)) {
+			console.log('just hit left');
 		}
-		if (pointer.justUp(this.left)) {
-			console.log('goodbye, you just unclicked left!!');
+		if (keyboard.justUp(this.left)) {
+			console.log('just released left');
 		}
 
-		this.components.update(gameTime);
-
-
-		
+		this.components.update(gameTime);	
 	}
 
 	draw(gameTime: GameTime) {
-		let context = this.services.get(Canvas).context;
-		context.fillStyle = 'black';
+		let canvas = this.services.get(Canvas);
+		let context = canvas.context;
+		context.fillStyle = canvas.backgroundColor;
 		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
 	}
 }

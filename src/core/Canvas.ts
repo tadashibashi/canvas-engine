@@ -18,22 +18,23 @@ export class Canvas extends DOMElementWrapper<HTMLCanvasElement> {
 	virtualHeight: number;
 	get screenWidth(): number { return this.element.width};
 	get screenHeight(): number { return this.element.height};
+	backgroundColor: string;
 
-	constructor(querySelector: string, width: number, height: number) {
+	constructor(querySelector: string, width = 320, height = 180, backgroundColor = 'black') {
 		super(querySelector); // super constructor queries the element
 		let canvas = this.element;
 		this.context = canvas.getContext('2d');
 		this.dpr = window.devicePixelRatio || 1;
 		this.virtualWidth = width;
 		this.virtualHeight = height;
-		canvas.accessKey
+		this.backgroundColor = backgroundColor;
 		this.updateCanvasScale();
-		window.addEventListener('resize', this.updateCanvasScale);
+		//window.addEventListener('resize', this.updateCanvasScale);
 	}
 	
 	updateCanvasScale = (ev?: UIEvent) => {
-		this.element.width = this.virtualWidth * this.dpr;
-		this.element.height = this.virtualHeight * this.dpr;
+		this.element.width = this.element.width * this.dpr;
+		this.element.height = this.element.height * this.dpr;
 		this.context.scale(this.dpr, this.dpr);
 	}
 
