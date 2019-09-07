@@ -1,6 +1,5 @@
 import { Component } from '../Component';
 import { GameTime } from '../../core/GameTime';
-import { ComponentManager } from '../ComponentManager';
 import { GameObject } from '../gameobjects/GameObject';
 
 export class Transform extends Component {

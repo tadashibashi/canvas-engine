@@ -2,7 +2,6 @@ import { Component } from '../Component';
 import { GameTime } from '../../core/GameTime';
 import { ComponentManager } from '../ComponentManager';
 import { Pointer } from './sources/Pointer';
-import { InputSource } from './sources/InputSource';
 import { Keyboard } from './sources/Keyboard';
 
 export class InputManager extends Component {

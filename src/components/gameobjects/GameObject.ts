@@ -1,4 +1,3 @@
-import { Component } from '../Component';
 import { ComponentManager } from '../ComponentManager';
 import { DrawableComponent } from '../DrawableComponent';
 import { GameTime } from '../../core/GameTime';

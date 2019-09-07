@@ -1,9 +1,12 @@
 /**
- * Wrapper around a Map to provide TypeScript casting and simpler interface
+ * Wrapper around a js Map to provide TypeScript casting and simpler interface
+ * Provides pseudo-singleton behavior since it will not accept overwrites to currently stored class/constructor keys.
  */
 export class TypeContainer {
 	private arr: any[] = [];
-
+	/**
+	 * @param type Constructor/ClassName of the element to search for
+	 */
 	get<T>(type: new(...any: any[]) => T): T | null {
 		let arr = this.arr;
 		let index = this.indexOfType(type, this.arr);
@@ -15,7 +18,7 @@ export class TypeContainer {
 		}
 	}
 
-	private indexOfType<T>(type: Function, arr: any[]): number {
+	private indexOfType(type: Function, arr: any[]): number {
 		for (let i=0; i<arr.length; i++) {
 			if (arr[i].constructor === type) {
 				return i;
