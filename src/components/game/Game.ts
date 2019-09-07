@@ -5,6 +5,8 @@ import { TypeContainer } from '../../core/TypeContainer';
 import { InputManager } from '../input/InputManager';
 import { Pointer } from '../input/sources/Pointer';
 import { PointerCodes, Input } from '../input/types/Types';
+import { Canvas } from '../../core/Canvas';
+
 
 export interface GameConfig {
 	canvasID: string;
@@ -21,12 +23,12 @@ export class Game extends DrawableComponent {
 	constructor(config: GameConfig) {
 		super();
 		Game.engine = this;
-		let canvas = document.getElementById(config.canvasID) as HTMLCanvasElement;
-		let context = canvas.getContext('2d');
+
+		let canvas = new Canvas('#' + config.canvasID, 320, 180);
+
 		let input = new InputManager();
 		
 		this.services
-			.set(context)
 			.set(canvas)
 			.set(input);
 
@@ -43,23 +45,25 @@ export class Game extends DrawableComponent {
 		let input = this.services.get(InputManager);
 		let pointer = input.sources.get(Pointer);
 		input.preUpdate(gameTime);
-
+		
+		
 		//console.log(pointer.position.x, pointer.position.lastX);
 		if (pointer.justDown(this.left)) {
 			console.log('hello, you clicked left!');
 		}
 		if (pointer.justUp(this.left)) {
-			console.log('goodbey, you just unclicked left!!');
+			console.log('goodbye, you just unclicked left!!');
 		}
 
 		this.components.update(gameTime);
 
+
+		
 	}
 
 	draw(gameTime: GameTime) {
-		let context = this.services.get(CanvasRenderingContext2D);
+		let context = this.services.get(Canvas).context;
 		context.fillStyle = 'black';
 		context.fillRect(0, 0, context.canvas.width, context.canvas.height);
-
 	}
 }
