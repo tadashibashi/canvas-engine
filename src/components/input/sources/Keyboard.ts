@@ -9,9 +9,10 @@ export class Keyboard extends InputSource<KeyboardEvent> {
 	awake() {
 		window.addEventListener('keydown', (ev) => this.queueEvent(ev));
 		window.addEventListener('keyup', (ev) => this.queueEvent(ev));
+		this.onInput.subscribe(this, this.processInput);
 	}
 
-	onInput = (ev: KeyboardEvent) => {
+	processInput(ev: KeyboardEvent) {
 	  let keys = this.inputs;
 	  let index = this.getIndexByCode(ev.keyCode);
 	  if (index !== -1) {
@@ -19,12 +20,12 @@ export class Keyboard extends InputSource<KeyboardEvent> {
 	  	this.inputs[index].axis = (ev.type === 'keydown')? 1 : 0;
 	  	console.log('key: ' + ev.key + ', axis: ' + this.inputs[index].axis); 
 	  }
-	  
 	}
 
 	destroy() {
 		window.removeEventListener('keyup', (ev) => {this.queueEvent(ev)});
 		window.removeEventListener('keydown', (ev) => {this.queueEvent(ev)});
+		this.onInput.unsubscribeAll();
 	}
 
 }

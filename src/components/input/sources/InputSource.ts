@@ -1,6 +1,7 @@
 import { Component } from '../../Component';
 import { Input } from '../types/Types';
 import { GameTime } from '../../../core/GameTime';
+import { Delegate } from '../../../core/Delegate';
 
 
 export abstract class InputSource<EventType extends Event> extends Component {
@@ -18,14 +19,14 @@ export abstract class InputSource<EventType extends Event> extends Component {
 	private eventQueue: EventType[] = [];
 
 	/**
-	 * Initalize window.addEventListeners here.
+	 * Initalize window.addEventListeners and make references with other components here.
 	 */
 	abstract awake(): void;
 
 	/**
 	 * Process all input events here
 	 */
-	abstract onInput(ev: EventType): void;
+	onInput = new Delegate<(ev: EventType) => void>();
 
 	/**
 	 * Remove window.removeEvent listeners here
@@ -40,6 +41,7 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		  let input = inputs[i];
 		  input.lastAxis = input.axis;
 		}
+	}
 
 	preUpdate(gameTime: GameTime) {
 		// This will shift the array queue forward and process the first Input in the array in onInput
