@@ -12,6 +12,10 @@ export class Transform extends Component {
 		pos.z = z;
 	}
 
+	constructor(x = 0, y = 0, z = 0) {
+		super(0); // <- updateOrder
+		this.setPosition(x, y, z);
+	}
 	addChild(c: GameObject) {
 		if (this.children.indexOf(c) === -1) {
 			this.children.push(c);

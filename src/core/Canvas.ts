@@ -33,9 +33,9 @@ export class Canvas extends DOMElementWrapper<HTMLCanvasElement> {
 	}
 	
 	updateCanvasScale = (ev?: UIEvent) => {
-		this.element.width = this.element.width * this.dpr;
-		this.element.height = this.element.height * this.dpr;
-		this.context.scale(this.dpr, this.dpr);
+		this.element.width = this.virtualWidth;
+		this.element.height = this.virtualHeight;
+		this.context.scale(1, 1);
 	}
 
 	destroy() {
