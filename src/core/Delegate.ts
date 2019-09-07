@@ -13,9 +13,17 @@ export class Delegate<F extends (...any: any[]) => void> {
 			console.log('Does not exist on this delegate handle');
 		}
 	}
+	/**
+	 * 
+	 * @param params Make sure to send the same parameters as the signature of the delegate
+	 */
 	send(...params: any[]) {
 		this.handle.forEach((t) => {
 			t[1].call(t[0], ...params);
 		});
+	}
+
+	unsubscribeAll() {
+		this.handle = [];
 	}
 }
