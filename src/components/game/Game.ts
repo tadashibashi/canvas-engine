@@ -42,6 +42,7 @@ export class Game extends DrawableComponent {
 	update(gameTime: GameTime) {
 		let input = this.services.get(InputManager);
 		let pointer = input.sources.get(Pointer);
+		input.preUpdate(gameTime);
 
 		//console.log(pointer.position.x, pointer.position.lastX);
 		if (pointer.justDown(this.left)) {

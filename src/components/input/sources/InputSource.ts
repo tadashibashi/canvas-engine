@@ -41,10 +41,11 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		  input.lastAxis = input.axis;
 		}
 
+	preUpdate(gameTime: GameTime) {
 		// This will shift the array queue forward and process the first Input in the array in onInput
 		if (this.eventQueue.length > 0) {
 		  let ev = this.eventQueue.shift();
-		  this.onInput(ev);
+		  this.onInput.send(ev);
 		}
 	}
 	/**

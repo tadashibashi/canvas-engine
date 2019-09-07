@@ -26,4 +26,8 @@ export class InputManager extends Component {
   update(gameTime: GameTime) {
   	this.sources.update(gameTime);
   }
+
+  preUpdate(gameTime: GameTime) {
+  	this.sources.preUpdate(gameTime);
+  }
 }
