@@ -1,7 +1,7 @@
 import { GameTime } from '../../core/GameTime';
 
 /**
- * A State to defines event code managed and contained by a StateMachine 
+ * A State to define and run event code managed and contained by a StateMachine 
  */
 export class State<T> {
   readonly key: T;
@@ -16,6 +16,9 @@ export class State<T> {
     if (exit) this.exit = exit;
   }
 
+  /**
+   * Checks whether or not this State contains a function you indicate
+   */
   has(event: 'update' | 'enter' | 'exit'): boolean {
     switch(event) {
       case 'enter':
@@ -31,7 +34,8 @@ export class State<T> {
   }
 
   run(event: 'update', context: any, gameTime: GameTime, timeInState: number): void;
-  run(event: 'enter' | 'exit', context: any, lastState: T, timeInLastState: number, data?: any): void;
+  run(event: 'enter', context: any, lastState: T, timeInLastState: number, data?: any): void;
+  run(event: 'exit', context: any, nextState: T, timeInThisState: number, data?: any): void;
   run(event: 'enter' | 'update' | 'exit', context: any, lastStateOrGameTime: T | GameTime, timeInLastState: number, data?: any): void {
     switch(event) {
       case 'enter': 
@@ -48,16 +52,18 @@ export class State<T> {
     
   }
 
-  on(event: 'enter' | 'exit', fn: (lastState?: T, timeInLastState?: number, data?: any)=>void): void;
-  on(event: 'update', fn: (gameTime: GameTime, timeInState: number)=>void): void;
-  on(event: 'enter' | 'update' | 'exit', fn: any): void {
+  on(event: 'enter', callback: (lastState?: T, secondsInLastState?: number, data?: any)=>void): this;
+  on(event: 'exit', callback: (nextState?: T, secondsInThisState?: number, data?: any)=>void): this;
+  on(event: 'update', callback: (gameTime: GameTime, timeInState: number)=>void): this;
+  on(event: 'enter' | 'update' | 'exit', callback: any): this {
     switch(event) {
-      case 'enter': this.enter = fn;
+      case 'enter': this.enter = callback;
         break;
-      case 'exit': this.exit = fn;
+      case 'exit': this.exit = callback;
         break;
-      case 'update': this.update = fn;
+      case 'update': this.update = callback;
         break;
     }
+    return this;
   }
 }
