@@ -7,39 +7,46 @@ import { GameTime } from '../../core/GameTime';
 /**
  * A GraphicRenderer must be on a ComponentManager that also contains a Transform component
  */
-export abstract class GraphicRenderer extends DrawableComponent {
+export class GraphicRenderer extends DrawableComponent {
 	/**
 	 * Image offset in game pixel units
 	 */
 	readonly anchor: Vector2 = {x: 0, y: 0};
+
 	/**
 	 * Image transparency/visibility (0 - 1)
 	 * 1 is fully visible, 0 is fully invisible
 	 */
 	alpha = 1;
+
 	/**
 	 * Image rotation in radians (0 to 2PI)
 	 */
-	private _angle = 0;
+	 private _angle = 0;
+
 	/**
 	 * Get or set the value of the angle in degrees (0 - 360)
 	 */
 	get angle() {return this._angle / Math.PI * 180;}
+
 	/**
 	 * @param angle The number of degrees to set the angle. 
 	 * Automatically wraps it to a number between 0 and 360.
 	 */
 	set angle(angle: number) {
-		this._angle = Mathf.wrap(angle, 0, angle * Math.PI / 180);
+		this._angle = Mathf.wrap(angle * Math.PI/180, 0, Math.PI*2);
 	}
+
 	/**
 	 * Image scale/stretching multiple
 	 */
 	readonly scale: Vector2 = {x: 1, y: 1};
+
 	/**
 	 * Whether or not this image will have Math.floor() applied to its render position
 	 */
 	pixelLock = false;
+
 	/**
 	 * Transform dependency. GraphicRenderer will render at its position.
 	 */
@@ -57,14 +64,20 @@ export abstract class GraphicRenderer extends DrawableComponent {
 	 * The event to safely associate other components within the manager.
 	 */
 	awake() {
+		super.awake();
 		this.transform = this.manager.get(Transform);
 		this.canvas = this.services.get(Canvas);
+	}
+	update(gameTime: GameTime) {
+
 	}
 	/**
 	 * EVENT: All drawing goes here. Must be implemented.
 	 * Make sure to use -anchor.x and -anchor.y positions when drawing to implement anchor positions.
 	 */
-	abstract draw(gameTime: GameTime): void;
+	draw(gameTime: GameTime): void {
+		throw new Error('draw() is not implemented on this GraphicRenderer!');
+	}
 
 	// ============ Expressive Setters ==============
 	/**
@@ -88,10 +101,10 @@ export abstract class GraphicRenderer extends DrawableComponent {
 
 	/**
 	 * Saves canvas context state, then alters with the GraphicRenderer's own parameters.
-	 * Use start() before drawing anything in draw(). 
+	 * Use start() before drawing anything in draw() you want to have scaling, position, rotation from the GraphicRenderer's variables.
 	 * end() will restore the canvas context state after all drawing has taken place.
 	 */
-	protected start(): void {
+	start(): void {
 		let context = this.canvas.context;
 		let position = this.transform.position;
 		let scale = this.scale;
@@ -106,7 +119,7 @@ export abstract class GraphicRenderer extends DrawableComponent {
 	 * Goes inside draw() after all drawing has taken place.
 	 * Call this to restores canvas context to its prior state before start().
 	 */
-	protected end(): void {
+	end(): void {
 		this.canvas.context.restore();
 	}
 
