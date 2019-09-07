@@ -16,23 +16,34 @@ export abstract class InputSource<EventType extends Event> extends Component {
 	 * lastAxis - when updated the InputSource will automatically set this
 	 */
 	protected inputs: Input[] = [];
-	private eventQueue: EventType[] = [];
-
 	/**
-	 * Initalize window.addEventListeners and make references with other components here.
+	 * Captures all input events and orders them to be processed one by one
+	 * This prevents mishaps when multiple events possibly happen in one frame, one overriding the other.
+	 * This ensures every input from the user is accounted for.
 	 */
-	abstract awake(): void;
+	private eventQueue: EventType[] = [];
 
 	/**
 	 * Process all input events here
 	 */
 	onInput = new Delegate<(ev: EventType) => void>();
 
+
+	// ============= Events ===================
+	/**
+	 * Initalize window.addEventListeners and make references with other components here.
+	 */
+	abstract awake(): void;
+
 	/**
 	 * Remove window.removeEvent listeners here
 	 */
 	abstract destroy(): void;
 
+	/**
+	 * This should be delayed to at the end of update.
+	 * This can be achieved by setting updateOrder to a bigger number
+	 */
 	update(gameTime: GameTime) {
 		let inputs = this.inputs;
 
@@ -43,6 +54,10 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		}
 	}
 
+	/**
+	 * Pre-update should be called before all other updates. 
+	 * Processing of input events from the queue happens here.
+	 */
 	preUpdate(gameTime: GameTime) {
 		// This will shift the array queue forward and process the first Input in the array in onInput
 		if (this.eventQueue.length > 0) {
@@ -50,8 +65,10 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		  this.onInput.send(ev);
 		}
 	}
+
 	/**
-	 * 
+	 * Adds a listener to this InputSource. 
+	 * Returns pre-existing inputs, otherwise creates a new one and returns it.
 	 * @param code The code of a particular input as it correlates to the EventType. 
 	 * e.g. keyCode on a KeyboardEvent: 38 is the up arrow
 	 */
@@ -70,6 +87,10 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		return newInput;
 	}
 
+	/**
+	 * Get an Input listener object that already exists.
+	 * Might as well use add since it will do the same thing.
+	 */
 	get(code: number): Input | null {
 		let i = this.getIndexByCode(code);
 		if (i !== -1) {
@@ -83,6 +104,9 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		return this.inputs;
 	}
 
+	/**
+	 * Removes an input listener from this InputSource
+	 */
 	remove(code: number): void {
 		let inputs = this.inputs;
 		let i = this.getIndexByCode(code);
@@ -98,6 +122,10 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		}
 	}
 
+	/**
+	 * Callback that adds an event to the eventQueue.
+	 * The callback to add to window.addEventListener
+	 */
 	queueEvent = (ev: EventType) => {
 		this.eventQueue.push(ev);
 	} 
