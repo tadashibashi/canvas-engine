@@ -10,6 +10,7 @@ import { Keyboard } from '../input/sources/Keyboard';
 import { GraphicRenderer } from '../graphics/GraphicRenderer';
 import { Draw } from '../../core/Draw';
 import { Transform } from '../transform/Transform';
+import { AssetManager } from '../../core/assets/AssetManager';
 
 
 export interface GameConfig {
@@ -23,45 +24,49 @@ export interface GameConfig {
 export class Game extends DrawableComponent {
 	static engine: Game;
 	readonly services = new TypeContainer();
-	readonly components = new ComponentManager();
+	protected readonly components = new ComponentManager();
+
 	left: Input;
 	right: Input;
+	fontSize = 1;
 	constructor(public readonly config: GameConfig) {
 		super();
 		Game.engine = this;
 
-		let canvas = new Canvas('#' + config.canvasID, 320, 180, config.backgroundColor);
-
+		let canvas = new Canvas('#' + config.canvasID, config.width, config.height, config.backgroundColor);
 		let input = new InputManager();
 		let gr = new GraphicRenderer();
 		gr.setAnchor(-200, -100);
+		gr.drawOrder = -100;
 		gr.update = (gameTime: GameTime) => {
-			gr.angle += 100 * gameTime.deltaSec;
+			this.fontSize += gameTime.deltaSec;
 		} 
 		gr.draw = (gameTime: GameTime) => {
 
 			gr.start();
 
-			Draw.circ(canvas.context, {x: -gr.anchor.x, y: -gr.anchor.y, r:100});
-
-			gr.end();
+			Draw.circ(canvas.context, {x: -gr.anchor.x, y: -gr.anchor.y, r:100}, 'gray', 'blue');
 			Draw.text(canvas.context, {
-				fillStyle: 'green',
+				fillStyle: 'orange',
 				fontFamily: 'Georgia',
-				fontSize: 12,
-				position: {x: 10 + gr.transform.position.x, y: 15 + gr.transform.position.y},
-				strokeStyle: 'none',
-				text: 'hello',
+				fontSize: this.fontSize,
+				position: {x: -gr.anchor.x, y: -gr.anchor.y},
+				text: this.fontSize.toString(),
 				textAlign: 'left'
 			});
+			gr.end();
 		}
+
+
+
 		this.services
 			.set(canvas)
-			.set(input);
+			.set(input)
+			.set(new AssetManager('../../public/'));
 
 		this.components
 			.add(input)
-			.add(gr)
+			.add(gr) //just testing gr and new Transform
 			.add(new Transform(100, 100, 10));
 
 	} 
