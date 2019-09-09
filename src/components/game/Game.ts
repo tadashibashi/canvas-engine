@@ -10,7 +10,7 @@ import { Keyboard } from '../input/sources/Keyboard';
 import { GraphicRenderer } from '../graphics/GraphicRenderer';
 import { Draw } from '../../core/Draw';
 import { Transform } from '../transform/Transform';
-import { AssetManager } from '../../core/assets/AssetManager';
+import { AssetManager } from '../../core/AssetManager';
 
 
 export interface GameConfig {
