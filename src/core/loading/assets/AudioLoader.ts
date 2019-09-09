@@ -24,14 +24,14 @@ export class AudioLoader extends AssetLoader<HTMLAudioElement> {
 
     //audio.addEventListener('canplay', canPlayHandler);
 
-    audio.preload = 'none';
+    audio.preload = 'auto';
     // Set the error message
     audio.onerror = (ev) => { 
     	throw new Error("Could not load audio file \"" + filepath +"\". Please check that the filepath is correct and that the file is compatible with browser.");
     }
+    
 
     audio.src = filepath;
-    audio.load();
 
     return {element: audio, key: key, filepath: filepath};
   }
@@ -66,7 +66,7 @@ export class AudioLoader extends AssetLoader<HTMLAudioElement> {
     });
 
     // 3. Check to see if all are loaded via setInterval
-    
+
     // If filesLoading is zero, this means no files were were loaded
     if (this.filesLoading === 0) { 
     	// Broadcast the fact we have finished loading (manager should subscribe to this)
