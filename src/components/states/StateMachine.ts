@@ -11,7 +11,7 @@ export class StateMachine<T> extends Component {
 	get timeInState() {return this._timeInState;}
 
 	/**
-	 * Subscribe your custom callback listener to this useful function
+	 * Subscribe to get notifications of state changes.
 	 */
 	readonly onStateChanged = new Delegate<(newState: T, lastState?: T) => void>();
 
@@ -20,6 +20,7 @@ export class StateMachine<T> extends Component {
     this.states = new Map<T, State<T>>();
   }
 
+  // ============= EVENT CALLBACKS ================================
   update(gameTime: GameTime): void {
     let state = this.state;
     if (state && this.isPlaying && state.has('update')) {
@@ -41,7 +42,7 @@ export class StateMachine<T> extends Component {
 	/**
 	 * Creates a state and adds it to the StateMachine. Use waterfall notation for readable code. e.g.
 	 * ```typescript
-	 * this.states.add(State.IDLE)
+	 * this.states.add(PlayerState.IDLE)
 	 *  .onenter( idleEnter )
 	 *  .onupdate( idleUpdate )
 	 *  .onexit((next) => {
@@ -56,7 +57,7 @@ export class StateMachine<T> extends Component {
   }
 
   /**
-   *
+   * Starts a State, exiting the last one
    * @param key The key of the State to start
    * @param data Extra data for the events to receive
    */
@@ -95,7 +96,6 @@ export class StateMachine<T> extends Component {
     	}
     	
     	this.isPlaying = true;
-
     }
     
 

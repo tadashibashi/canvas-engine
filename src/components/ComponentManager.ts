@@ -10,7 +10,7 @@ export class ComponentManager extends DrawableComponent {
 	private drawList: DrawableComponent[] = [];
 
 
-	// ============ COMPONENT MANAGEMENT ======================
+	// ============ COMPONENT MANAGEMENT (add, get, remove, sort)================
 	/**
 	 * Gets a component contained by this manager. Returns null if none.
 	 * @param type Class name of the type of component to find.
