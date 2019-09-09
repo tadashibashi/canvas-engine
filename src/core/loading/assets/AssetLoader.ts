@@ -14,12 +14,12 @@ export abstract class AssetLoader<T> extends Loader {
   /**
    * Contains an array of config objects that indicate what JSON files will batch load assets.
    */
-  private toLoadViaJSON: {key: string, filepath: string}[] = [];
+  protected toLoadViaJSON: {key: string, filepath: string}[] = [];
   
   /**
    * Counter that marks how many files are currently loading
    */
-  private filesLoading = 0;
+  protected filesLoading = 0;
 
   readonly onFileLoaded = new Delegate<(item: T, key: string, filepath: string) => void>();
 
@@ -55,7 +55,10 @@ export abstract class AssetLoader<T> extends Loader {
    * Initiates loading for this AssetLoader. Called by AssetLoadManager.
    */
   load = (): void => {
-
+  	// Pop in JSON keys to the toLoad queue if there are any
+    if (this.toLoadViaJSON.length > 0) {
+    	this.loadViaJSON();
+    }
     let toLoad = this.toLoad;
     let cache = this.cache;
     // Load each file in the toLoad queue
@@ -78,7 +81,7 @@ export abstract class AssetLoader<T> extends Loader {
     }
   } 
 
-  private loadViaJSON() {
+  protected loadViaJSON() {
   	let toLoad = this.toLoad; 
   	let toLoadViaJSON = this.toLoadViaJSON;
   	let jsonCache = this.manager.assets.json;
@@ -110,7 +113,6 @@ export abstract class AssetLoader<T> extends Loader {
     console.log('Loaded', item, '"'+key+'"', 'at:', filepath);
     this.cache.set(key, item); // load file in the cache
     this.filesLoading --; // subtract from file counter
-
     // If all files are finished
     if (this.filesLoading === 0) {
       this.toLoad = []; // reset load queue

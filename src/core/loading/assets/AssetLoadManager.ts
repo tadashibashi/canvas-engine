@@ -46,7 +46,6 @@ export class AssetLoadManager extends Loader {
 		this.jsonLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
 		this.imageLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
 		this.audioLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
-		this.onLoadFinish.subscribe(this, this.finishLoading);
 
     this.states = new StateMachine(this);
     this.states.add('json')
@@ -59,7 +58,7 @@ export class AssetLoadManager extends Loader {
       .on('enter', this.audioLoader.load);
 
     this.states.add('finished')
-      .on('enter', () => {this.onLoadFinish.send()});
+      .on('enter', this.finishLoading);
   }
 
   // PUBLIC API
@@ -102,7 +101,7 @@ export class AssetLoadManager extends Loader {
   /**
    * Fires when assets are finished loading
    */ 
-  private finishLoading() {
+  private finishLoading = () => {
     console.log('Finished Loading all files!');
     this.onLoadFinish.send();
     this.isLoading = false;
@@ -110,7 +109,7 @@ export class AssetLoadManager extends Loader {
 
   /**
    * This is a handler that is called when an asset type has finished loading
-   * It prescribes the order of the next asset type that will then begin loading.
+   * It prescribes the order of the asset type that will begin loading next.
    */
   private finishedLoadingAssetType = (): void => {
     switch(this.states.currentKey) {
