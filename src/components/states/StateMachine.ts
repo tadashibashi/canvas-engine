@@ -91,7 +91,7 @@ export class StateMachine<T> extends Component {
     	}
        
     	if (lastStateKey !== this.state.key && this.onStateChanged) {
-    		this.onStateChanged(key, lastStateKey);
+    		this.onStateChanged.send(key, lastStateKey);
     	}
     	
     	this.isPlaying = true;
