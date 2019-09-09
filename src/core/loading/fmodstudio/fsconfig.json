@@ -1,0 +1,11 @@
+{
+	"totalMemory": 67108864,
+	"preload": {
+		"rootDir": "../../../../public/audio/",
+		"files": 
+		[
+			"Master Bank.bank",
+			"Master Bank.strings.bank"
+		]
+	}
+}

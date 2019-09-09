@@ -1,4 +1,4 @@
-import { AssetLoadManager } from './loading/AssetLoadManager';
+import { AssetLoadManager } from './loading/assets/AssetLoadManager';
 
 /**
  * Stores all game assets and contains the loader for these assets
@@ -13,5 +13,12 @@ export class AssetManager {
 	readonly images = new Map<string, HTMLImageElement>();
 	constructor(assetBaseURL: string) {
 		this.load = new AssetLoadManager(assetBaseURL, this);
+	}
+
+	/**
+	 * Helper method for retrieving and parsing JSON.
+	 */
+	getJSONObject(key: string) {
+		return JSON.parse(this.json.get(key));
 	}
 }

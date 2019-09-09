@@ -1,10 +1,11 @@
 import { AssetLoadManager } from "./AssetLoadManager";
 import { Delegate } from '../../Delegate';
+import { Loader } from '../Loader';
  
 /**
  * Private loader owned by AssetLoadManager for a particular indicated asset type
  */
-export abstract class AssetLoader<T> {
+export abstract class AssetLoader<T> extends Loader {
   
 	/**
 	 * Contains an array of config objects that indicate what files to load.
@@ -20,19 +21,10 @@ export abstract class AssetLoader<T> {
    */
   private filesLoading = 0;
 
-  /**
-   * An event that the AssetLoadManager should subscribe to in order to advance loading procession.
-   */
-  readonly onFinishedLoading = new Delegate<()=>void>();
   readonly onFileLoaded = new Delegate<(item: T, key: string, filepath: string) => void>();
 
-  /**
-   * Set this for debug logging purposes
-   */
-  isDebug = true;
-
-
   constructor(public manager: AssetLoadManager, public cache: Map<string, T>, public subURL: string) {
+  	super();
   	this.onFileLoaded.subscribe(this, this.onFileLoadedHandler);
   }
 
@@ -82,14 +74,14 @@ export abstract class AssetLoader<T> {
     // If filesLoading is zero, this means no files were were loaded
     if (this.filesLoading === 0) { 
     	// Broadcast the fact we have finished loading (manager should subscribe to this)
-      this.onFinishedLoading.send();
+      this.onLoadFinish.send();
     }
   } 
 
   private loadViaJSON() {
   	let toLoad = this.toLoad; 
   	let toLoadViaJSON = this.toLoadViaJSON;
-  	let jsonCache = this.manager.jsonLoader.cache;
+  	let jsonCache = this.manager.assets.json;
   	this.filesLoading = 0; // Reset file counter just in case
   	toLoadViaJSON.forEach((jsonConfig) => {
   	  let json: {key: string, filepath: string}[] = JSON.parse(jsonCache.get(jsonConfig.key));
@@ -123,7 +115,7 @@ export abstract class AssetLoader<T> {
     if (this.filesLoading === 0) {
       this.toLoad = []; // reset load queue
       // Broadcast the fact we have finished loading (manager should subscribe to this)
-      this.onFinishedLoading.send();
+      this.onLoadFinish.send();
     }
   }
 }

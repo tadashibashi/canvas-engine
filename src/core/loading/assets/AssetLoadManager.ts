@@ -4,21 +4,23 @@ import { StateMachine } from "../../../components/states/StateMachine";
 import { JSONLoader } from "./JSONLoader";
 import { ImageLoader } from "./ImageLoader";
 import { AudioLoader } from "./AudioLoader";
-import { AssetManager } from '../AssetManager';
-import { Delegate } from '../../Delegate';
 
+import { Delegate } from '../../Delegate';
+import { Loader } from '../Loader';
+
+/**
+ * Something that holds the data store for assets
+ */
 export interface IAssetBank {
 	json: Map<string, string>;
 	images: Map<string, HTMLImageElement>;
 	audio: Map<string, HTMLAudioElement>;
 }
 
-export class AssetLoadManager {
+export class AssetLoadManager extends Loader {
   isLoading: boolean = false;
   readonly initState = 'json';
-  states: StateMachine<'json' | 'images' | 'audio' | 'finished'>;
-
-  private onLoadFinish = new Delegate<()=>void>();
+  readonly states: StateMachine<'json' | 'images' | 'audio' | 'finished'>;
 
   // Loaders
   /**
@@ -29,18 +31,22 @@ export class AssetLoadManager {
   private imageLoader: ImageLoader;
   private audioLoader: AudioLoader;
 
+
   /**
-   * 
+   * @param baseURL The path to the asset root folder
+   * @param assets The object that holds the asset caches. Allows loaders to store data.
    */
-  constructor(public baseURL: string, assets: IAssetBank) {
+  constructor(public baseURL: string, public assets: IAssetBank) {
+	  super();
 	  this.jsonLoader = new JSONLoader(this, assets.json, 'json/');
 	  this.imageLoader = new ImageLoader(this, assets.images, 'images/');
 	  this.audioLoader = new AudioLoader(this, assets.audio, 'audio/');
 
 	  // Attach callbacks
-		this.jsonLoader.onFinishedLoading.subscribe(this, this.finishedLoadingAssetType);
-		this.imageLoader.onFinishedLoading.subscribe(this, this.finishedLoadingAssetType);
-		this.audioLoader.onFinishedLoading.subscribe(this, this.finishedLoadingAssetType);
+		this.jsonLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
+		this.imageLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
+		this.audioLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
+		this.onLoadFinish.subscribe(this, this.finishLoading);
 
     this.states = new StateMachine(this);
     this.states.add('json')
@@ -53,7 +59,7 @@ export class AssetLoadManager {
       .on('enter', this.audioLoader.load);
 
     this.states.add('finished')
-      .on('enter', this.finishLoading);
+      .on('enter', () => {this.onLoadFinish.send()});
   }
 
   // PUBLIC API
@@ -64,6 +70,7 @@ export class AssetLoadManager {
     this.isLoading = true;
     this.states.start(this.initState); // first state in the chain
   }
+
   /**
    * Queues a JSON file for loading.
    * @param key key of the file to load
@@ -100,7 +107,7 @@ export class AssetLoadManager {
     this.onLoadFinish.send();
     this.isLoading = false;
   }
-  
+
   /**
    * This is a handler that is called when an asset type has finished loading
    * It prescribes the order of the next asset type that will then begin loading.
