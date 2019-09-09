@@ -2,6 +2,7 @@ import { GameTime } from '../core/GameTime';
 import { ComponentManager } from './ComponentManager';
 import { TypeContainer } from '../core/TypeContainer';
 import { Game } from './game/Game';
+import { Delegate } from '../core/Delegate';
 
 export abstract class Component {
 	
@@ -21,17 +22,13 @@ export abstract class Component {
 	/**
 	 * An event handle that others can subscribe to when the update order changes
 	 */
-	onUpdateOrderChanged: ((component: Component, value: number) => void)[] = [];
+	onUpdateOrderChanged = new Delegate<((component: Component, value: number) => void)>();
 
 	private _updateOrder: number;
 	get updateOrder() {return this._updateOrder;}
 	set updateOrder(val: number) {
 		this._updateOrder = val;
-		if (this.onUpdateOrderChanged) {
-			this.onUpdateOrderChanged.forEach((fn) => {
-				fn(this, val);
-			});
-		}
+		this.onUpdateOrderChanged.send(this, val);
 	}
  
 	/**
@@ -48,13 +45,13 @@ export abstract class Component {
 	 */
 	awake(): void {
 		this.services = Game.engine.services;
-	};
+	}
 
 	abstract update(gameTime: GameTime): void;
 	preUpdate(gameTime: GameTime) {};
 	// Use to remove references
 	destroy() {
-		this.onUpdateOrderChanged = [];
+		this.onUpdateOrderChanged.unsubscribeAll();
 	}
 
 }

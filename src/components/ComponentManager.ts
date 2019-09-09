@@ -2,7 +2,6 @@ import { Component } from './Component';
 import { DrawableComponent } from './DrawableComponent';
 import { GameTime } from '../core/GameTime';
 
-
 /**
  * A class that acts as a container for Components and DrawableComponents. (It is a DrawableComponent itself!)
  */
@@ -10,16 +9,8 @@ export class ComponentManager extends DrawableComponent {
 	private components: Component[] = [];
 	private drawList: DrawableComponent[] = [];
 
-	/**
-	 * Called after initialization, it is safe to refer to and get components 
-	 * from other services and managers here.
-	 */
-	awake() {
-		this.forEach(c => c.awake());
-		this.sortUpdateListOrder();
-		this.sortDrawListOrder();
-	}
 
+	// ============ COMPONENT MANAGEMENT ======================
 	/**
 	 * Gets a component contained by this manager. Returns null if none.
 	 * @param type Class name of the type of component to find.
@@ -46,9 +37,9 @@ export class ComponentManager extends DrawableComponent {
 			// Add component to the appropriate arrays, and add listeners for on order changed.
 			if (component instanceof DrawableComponent) {
 				this.drawList.push(component);
-				component.onDrawOrderChanged.push(this.sortDrawListOrder);
+				component.onDrawOrderChanged.subscribe(this, this.sortDrawListOrder);
 			}
-			component.onUpdateOrderChanged.push(this.sortUpdateListOrder);
+			component.onUpdateOrderChanged.subscribe(this, this.sortUpdateListOrder);
 			this.components.push(component);
 		}
 		// Cache ComponentManager to Component to enable access to other components
@@ -65,7 +56,10 @@ export class ComponentManager extends DrawableComponent {
 	remove(component: Component, destroy = false) {
 		let index = this.components.indexOf(component);
 		if (index !== -1) {
+			component.onUpdateOrderChanged.unsubscribe(this, this.sortUpdateListOrder);
+
 			if (component instanceof DrawableComponent) {
+				component.onDrawOrderChanged.unsubscribe(this, this.sortDrawListOrder);
 				let drawIndex = this.drawList.indexOf(component as DrawableComponent);
 				this.drawList.splice(drawIndex, 1);
 			}
@@ -92,6 +86,25 @@ export class ComponentManager extends DrawableComponent {
 	}
 
 	/**
+	 * Updates the sort order of this ComponentManager's DrawList Components (low to high).
+	 * Automatically added to each added DrawableComponent's onDrawOrderChanged event
+	 * and removed when the DrawableComponent is removed.
+	 */
+	sortDrawListOrder = () => {
+		this.drawList = this.drawList.sort((a, b) => (a.drawOrder > b.drawOrder)? 1 : -1);
+	}	
+
+	/**
+	 * Updates the update order of the component list (low to high).
+	 * Automatically added to each added Component's onUpdateOrderChanged event
+	 * and removed when the Component is removed.
+	 */
+	sortUpdateListOrder = () => {
+		this.components = this.components.sort((a, b) => (a.updateOrder > b.updateOrder)? 1 : -1);
+	}
+
+	// ================== HELPER UTILITIES ==========================
+	/**
 	 * Iterates through each Component and passes them to a callback
 	 * @param callback The function that will be called for each Component
 	 */
@@ -113,18 +126,12 @@ export class ComponentManager extends DrawableComponent {
 		}
 	}
 
-	/**
-	 * Updates the sort order of this ComponentManager's DrawList Components (low to high)
-	 */
-	sortDrawListOrder = () => {
-		this.drawList = this.drawList.sort((a, b) => (a.drawOrder > b.drawOrder)? 1 : -1);
-	}	
+	// ============== EVENT HANDLERS/CALLBACKS =====================
 
-	/**
-	 * Updates the update order of the component list (low to high)
-	 */
-	sortUpdateListOrder = () => {
-		this.components = this.components.sort((a, b) => (a.updateOrder > b.updateOrder)? 1 : -1);
+	awake() {
+		this.forEach(c => c.awake());
+		this.sortUpdateListOrder();
+		this.sortDrawListOrder();
 	}
 
 	/**
