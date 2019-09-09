@@ -1,6 +1,7 @@
 import { GameTime } from '../../core/GameTime';
 import { State } from './State';
 import { Component } from '../Component';
+import { Delegate } from '../../core/Delegate';
 
 export class StateMachine<T> extends Component {
 	private states: Map<T, State<T>>;
@@ -12,7 +13,7 @@ export class StateMachine<T> extends Component {
 	/**
 	 * Subscribe your custom callback listener to this useful function
 	 */
-	onStateChanged?: (newState: T, lastState?: T) => void;
+	readonly onStateChanged = new Delegate<(newState: T, lastState?: T) => void>();
 
 	constructor(private context: any) {
 		super();
