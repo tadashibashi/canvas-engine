@@ -11,7 +11,8 @@ import { GraphicRenderer } from '../graphics/GraphicRenderer';
 import { Draw } from '../../core/Draw';
 import { Transform } from '../transform/Transform';
 import { AssetManager } from '../../core/AssetManager';
-
+import { FMODLoader } from '../../core/loading/fmodstudio/FMODLoader';
+import { IFMOD } from '../../libraries/IFMOD/IFMOD';
 
 export interface GameConfig {
 	readonly canvasID: string;
@@ -26,6 +27,8 @@ export class Game extends DrawableComponent {
 	readonly services = new TypeContainer();
 	protected readonly components = new ComponentManager();
 
+	fmodLoader: FMODLoader;
+	fmod: IFMOD.StudioSystem;
 	left: Input;
 	right: Input;
 	fontSize = 1;
@@ -33,6 +36,24 @@ export class Game extends DrawableComponent {
 	constructor(public readonly config: GameConfig) {
 		super();
 		Game.engine = this;
+
+		// FMOD LOADER
+		this.fmodLoader = new FMODLoader(1024*1024*64, 'public/audio');
+		this.fmodLoader.addPreloadFiles({
+			directory: '/',
+			fileNames: ['Master Bank.bank', 'Master Bank.strings.bank'],
+			url: 'banks/'
+		});
+		this.fmodLoader.onLoadFinish.subscribe(this, (system) => {
+			this.fmod = system;
+			let outval: any = {};
+			system.getEvent('event:/Gallia', outval);
+			let desc = outval.val as IFMOD.EventDescription;
+			desc.createInstance(outval);
+			let inst = outval.val as IFMOD.EventInstance;
+			inst.start();
+		});
+		this.fmodLoader.load();
 
 		let canvas = new Canvas('#' + config.canvasID, config.width, config.height, config.backgroundColor);
 		let input = new InputManager();
@@ -108,7 +129,7 @@ export class Game extends DrawableComponent {
 		}
 
 		this.components.update(gameTime);	
-		
+		if (this.fmod) this.fmod.update();
 	}
 
 	draw(gameTime: GameTime) {
