@@ -65,8 +65,6 @@ window.onload = (ev: Event) => {
 
 	});
 
-	game.awake();
-
 	let gameTime = new GameTime();
 	
 	main(0);
@@ -74,7 +72,6 @@ window.onload = (ev: Event) => {
 	function main(time: number) {
 		window.requestAnimationFrame(main);
 		if (globalPause) return;
-		console.log('hello', time);
 		if (system) {
 			// Checking if banks are loaded
 			if (!banksLoaded) {
@@ -111,7 +108,7 @@ window.onload = (ev: Event) => {
 			if (banksLoaded && silenceEnded && !eventStarted) {
 				eventStarted = true;
 				console.log('auido ready, starting event!');
-				event.start();
+				//event.start();
 			}
 
 			system.update();
