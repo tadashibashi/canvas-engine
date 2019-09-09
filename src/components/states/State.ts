@@ -1,7 +1,9 @@
 import { GameTime } from '../../core/GameTime';
 
 /**
- * A State to define and run event code managed and contained by a StateMachine 
+ * A State stores and enacts behavior specified by the callback functions that are set.
+ * It is normally managed and contained by a StateMachine.
+ * @type T The type of key that it contains. Used by the StateMachine.
  */
 export class State<T> {
   readonly key: T;
@@ -9,15 +11,16 @@ export class State<T> {
   private update?: (gameTime: GameTime, timeInState: number) => void;
   private exit?: (next?: T, time?: number, data?: any) => void;
 
-  constructor(key: T, update?: ()=>void, enter?: (...params: any) => void, exit?: (...params: any) => void) {
+  /**
+   * Creates the State. Make sure to add state behavior with State.prototype.on().
+   */
+  constructor(key: T) {
     this.key = key;
-    if (update) this.update = update;
-    if (enter) this.enter = enter;
-    if (exit) this.exit = exit;
   }
 
   /**
    * Checks whether or not this State contains a function you indicate
+   * @param {'update' | 'enter' | 'exit'} event 
    */
   has(event: 'update' | 'enter' | 'exit'): boolean {
     switch(event) {
@@ -33,6 +36,10 @@ export class State<T> {
     }
   }
 
+  /**
+   * Runs the specified event, (which must be set via on() prior to this call).
+   * Usually handled automatically by a StateManager, but can also be enacted manually.
+   */
   run(event: 'update', context: any, gameTime: GameTime, timeInState: number): void;
   run(event: 'enter', context: any, lastState: T, timeInLastState: number, data?: any): void;
   run(event: 'exit', context: any, nextState: T, timeInThisState: number, data?: any): void;
@@ -52,6 +59,12 @@ export class State<T> {
     
   }
 
+  /**
+   * Sets the behavior at the indicated event by linking a callback function to it.
+   * While being handled by a StateMachine:
+   * Enter and exit are called once at the start and end of the State, respectively. 
+   * Update is called once every frame if the StateManager is calling update().
+   */
   on(event: 'enter', callback: (lastState?: T, secondsInLastState?: number, data?: any)=>void): this;
   on(event: 'exit', callback: (nextState?: T, secondsInThisState?: number, data?: any)=>void): this;
   on(event: 'update', callback: (gameTime: GameTime, timeInState: number)=>void): this;

@@ -47,7 +47,8 @@ export class Delegate<F extends (...any: any[])=>void> {
 
 	/**
 	 * Callback to every subscriber to this Delegate. Let them know the thing just happened!
-	 * @param params Make sure to send the same parameters as the signature of the delegate
+	 * @param params Make sure to send the same parameters as the signature of the Delegate
+	 * You should be able to see the signature by hovering over the Delegate if not this function.
 	 */
 	send(...params: any[]): void {
 		this.handle.forEach((t) => {
