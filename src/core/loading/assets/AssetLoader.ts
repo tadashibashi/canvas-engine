@@ -21,6 +21,9 @@ export abstract class AssetLoader<T> extends Loader {
    */
   protected filesLoading = 0;
 
+  /**
+   * Event to subscribe to. Fires when a file has loaded.
+   */
   readonly onFileLoaded = new Delegate<(item: T, key: string, filepath: string) => void>();
 
   constructor(public manager: AssetLoadManager, public cache: Map<string, T>, public subURL: string) {

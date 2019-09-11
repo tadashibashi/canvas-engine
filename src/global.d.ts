@@ -45,6 +45,12 @@ declare interface Circ {
 	r: number;
 }
 
+
+declare interface KeyPath {
+	key: string;
+	filepath: string;
+}
+
 declare interface TextConfig {
 	position: Vector2;
 	fontFamily: string;
