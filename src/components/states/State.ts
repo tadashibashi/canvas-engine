@@ -1,5 +1,12 @@
 import { GameTime } from '../../core/GameTime';
 
+export namespace State {
+	export const enum Event {
+		ENTER,
+		UPDATE,
+		EXIT
+	}
+}
 /**
  * A State stores and enacts behavior specified by the callback functions that are set.
  * It is normally managed and contained by a StateMachine.
@@ -7,6 +14,7 @@ import { GameTime } from '../../core/GameTime';
  */
 export class State<T> {
   readonly key: T;
+
   private enter?: (last?: T, time?: number, data?: any) => void;
   private update?: (gameTime: GameTime, timeInState: number) => void;
   private exit?: (next?: T, time?: number, data?: any) => void;
@@ -20,17 +28,17 @@ export class State<T> {
 
   /**
    * Checks whether or not this State contains a function you indicate
-   * @param {'update' | 'enter' | 'exit'} event 
+   * @param event 
    */
-  has(event: 'update' | 'enter' | 'exit'): boolean {
+  has(event: State.Event): boolean {
     switch(event) {
-      case 'enter':
+      case State.Event.ENTER:
         return this.enter? true : false;
         break;
-      case 'exit':
+      case State.Event.EXIT:
         return this.exit? true : false;
         break;
-      case 'update':
+      case State.Event.UPDATE:
         return this.update? true : false;
         break;
     }
@@ -40,23 +48,26 @@ export class State<T> {
    * Runs the specified event, (which must be set via on() prior to this call).
    * Usually handled automatically by a StateManager, but can also be enacted manually.
    */
-  run(event: 'update', context: any, gameTime: GameTime, timeInState: number): void;
-  run(event: 'enter', context: any, lastState: T, timeInLastState: number, data?: any): void;
-  run(event: 'exit', context: any, nextState: T, timeInThisState: number, data?: any): void;
-  run(event: 'enter' | 'update' | 'exit', context: any, lastStateOrGameTime: T | GameTime, timeInLastState: number, data?: any): void {
+  run(event: State.Event.UPDATE, context: any, gameTime: GameTime, timeInState: number): void;
+  run(event: State.Event.ENTER, context: any, lastState: T | undefined, timeInLastState: number, data?: any): void;
+  run(event: State.Event.EXIT, context: any, nextState: T | undefined, timeInThisState: number, data?: any): void;
+  run(event: State.Event, context: any, lastStateOrGameTime: T | GameTime | undefined, timeInLastState: number, data?: any): void {
     switch(event) {
-      case 'enter': 
+      case State.Event.ENTER: 
         if (this.enter)
           this.enter.call(context, lastStateOrGameTime as T, timeInLastState, data);
         else
           console.log('')
         break;
-      case 'exit': this.exit.call(context, lastStateOrGameTime as T, timeInLastState, data);
+      case State.Event.EXIT: 
+      if (this.exit)
+      	this.exit.call(context, lastStateOrGameTime as T, timeInLastState, data);
         break;
-      case 'update': this.update.call(context, lastStateOrGameTime as GameTime, timeInLastState);
+      case State.Event.UPDATE: 
+      if (this.update)
+      	this.update.call(context, lastStateOrGameTime as GameTime, timeInLastState);
         break;
-    }
-    
+    }  
   }
 
   /**
@@ -68,7 +79,7 @@ export class State<T> {
   on(event: 'enter', callback: (lastState?: T, secondsInLastState?: number, data?: any)=>void): this;
   on(event: 'exit', callback: (nextState?: T, secondsInThisState?: number, data?: any)=>void): this;
   on(event: 'update', callback: (gameTime: GameTime, timeInState: number)=>void): this;
-  on(event: 'enter' | 'update' | 'exit', callback: any): this {
+  on(event: 'enter' | 'exit' | 'update', callback: any): this {
     switch(event) {
       case 'enter': this.enter = callback;
         break;
@@ -80,3 +91,8 @@ export class State<T> {
     return this;
   }
 }
+
+
+
+
+
