@@ -1,4 +1,5 @@
 import { AssetLoadManager } from './loading/assets/AssetLoadManager';
+import { FMODLoader } from './loading/fmodstudio/FMODLoader';
 
 /**
  * Stores all game assets and contains the loader for these assets
@@ -11,14 +12,18 @@ export class AssetManager {
 	readonly json = new Map<string, string>();
 	readonly audio = new Map<string, HTMLAudioElement>();
 	readonly images = new Map<string, HTMLImageElement>();
-	constructor(assetBaseURL: string) {
-		this.load = new AssetLoadManager(assetBaseURL, this);
+	constructor(assetBaseURL: string, fmodLoader?: FMODLoader) {
+		this.load = new AssetLoadManager(assetBaseURL, this, fmodLoader);
 	}
 
 	/**
 	 * Helper method for retrieving and parsing JSON.
 	 */
-	getJSONObject(key: string) {
-		return JSON.parse(this.json.get(key));
+	getJSONObject(key: string): any {
+		const jsonStr = this.json.get(key);
+		if (jsonStr)
+			return JSON.parse(jsonStr);
+		else
+			return {};
 	}
 }

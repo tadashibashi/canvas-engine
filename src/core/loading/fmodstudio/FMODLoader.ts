@@ -1,39 +1,77 @@
-import { IFMOD, FMOD, CHECK_RESULT, parseGUID } from '../../../libraries/IFMOD/IFMOD';
+
 import { Loader } from '../Loader';
 import { Delegate } from '../../Delegate';
 import { DelegateGroup } from '../../DelegateGroup';
-import { FMODPreloadFileData, FMODLoaderConfig } from './FMODLoaderTypes';
+import { FMODPreloadFileData, FMODLoaderConfig, FMODLoaderConfigDefaults } from './FMODLoaderTypes';
+import { Outval, CHECK_RESULT, parseID } from '../../../components/audio/FMODRuntimeUtil';
 
-// In index.html make sure that fmodstudio.js is loaded in a script before this library's modules
-declare const FMODModule: (fmodObject: any)=>void;
+export namespace FMODLoader {
+	export const enum Event {
+		PRELOAD,
+		RUNTIMEINIT,
+		BANKSLOADED,
+		SOUNDTESTEND
+	}
+}
 
 export class FMODLoader extends Loader {
-	private system: IFMOD.StudioSystem;
-	private core: IFMOD.System;
+	soundTest = false;
+	
+	private get system(): FMOD.StudioSystem {
+		return this._system as FMOD.StudioSystem;
+	}
+	private _system: FMOD.StudioSystem | undefined;
+
+	private get core(): FMOD.System {
+		return this._core as FMOD.System;
+	}
+	private _core: FMOD.System | undefined;
+
+	private fmod: FMOD = {};
+	private config: FMODLoaderConfig;
 
 	// Events
-	readonly events = new DelegateGroup<
-	'preload' | 'runtimeinit' | 'banksloaded' | 'testsoundended', () => void>();
-	readonly onLoadFinish = new Delegate<(system: IFMOD.StudioSystem) => void>();
+	readonly events = new DelegateGroup<FMODLoader.Event, () => void>(
+		FMODLoader.Event.PRELOAD,
+		FMODLoader.Event.RUNTIMEINIT,
+		FMODLoader.Event.BANKSLOADED,
+		FMODLoader.Event.SOUNDTESTEND
+	);
 
-	constructor(private config: FMODLoaderConfig) {
+	readonly onLoadFinish = new Delegate<(system: FMOD.StudioSystem, fmodObject:FMOD) => void>();
+
+	constructor(config: FMODLoaderConfig) {
 		super();
 		// Handle config defaults
 		this.handleFMODLoaderConfigDefaults(config);
+		this.config = config;
 
 		// Attach events
 		this.events
-			.on('preload', this, () => {this.evPreload(this.config.preloadFileData);})
-			.on('runtimeinit', this, () => {this.evRuntimeInitialized();})
-			.on('banksloaded', this, () => {this.evTestSound();})
-			.on('testsoundended', this, () => {this.evFinish();});
+			.on(FMODLoader.Event.PRELOAD, this, () => {
+				this.evPreload(this.config.preloadFileData);
+			})
+			.on(FMODLoader.Event.RUNTIMEINIT, this, () => {
+				this.evRuntimeInitialized();
+			})
+			.on(FMODLoader.Event.BANKSLOADED, this, () => {
+				this.evTestSound();
+			})
+			.on(FMODLoader.Event.SOUNDTESTEND, this, () => {
+				this.evFinish();
+			});
 	}
 
-	load() {
-		FMOD.TOTAL_MEMORY = this.config.totalMemory;
-		FMOD.preRun = () => {this.events.send('preload');};
-		FMOD.onRuntimeInitialized = () => {this.events.send('runtimeinit');};
-		FMODModule(FMOD);
+	load = () => {
+		let fmod = this.fmod;
+		fmod.TOTAL_MEMORY = this.config.totalMemory,
+		fmod.preRun = () => {
+			this.events.send(FMODLoader.Event.PRELOAD);
+		},
+		fmod.onRuntimeInitialized = () => {
+			this.events.send(FMODLoader.Event.RUNTIMEINIT);
+		}
+		FMODModule(fmod);
 	}
 
 	addPreloadFiles(data: FMODPreloadFileData) {
@@ -46,12 +84,15 @@ export class FMODLoader extends Loader {
 	 */
 	private evPreload = (configs: FMODPreloadFileData[]) => {
 		console.log('FMOD is Mounting Preload files...');
+
 		configs.forEach((data) => {
 			let url = data.url? data.url : '';
 			let readable = data.readable? data.readable : true;
 			let writable = data.writable? data.writable : false;
 			data.fileNames.forEach((filename) => {
-				IFMOD.FS_createPreloadedFile(data.directory, filename, this.config.assetBaseURL + '/' + url + filename, readable, writable);
+				if (this.fmod.FS_createPreloadedFile) {
+					this.fmod.FS_createPreloadedFile(data.directory, filename, this.config.assetBaseURL + '/' + url + filename, readable, writable);
+				}
 			});
 		});		
 	}
@@ -60,31 +101,38 @@ export class FMODLoader extends Loader {
 	 * Creates the FMOD Studio System object, initializes it, and loads banks, sending the signal when loaded
 	 */
 	private evRuntimeInitialized = () => {
-		// TODO: Have data passed configurgurably with config object
+		// make sure fmod object is injected
+		if (!this.fmod.Studio_System_Create) {
+			throw new Error('Warning! FMOD Object has not been initialized!');
+			return;
+		}
 		console.log('FMOD Runtime has been initialized. Loading banks...');
-		let outval: any = {};
-		IFMOD.Studio_System_Create(outval);
-		this.system = outval.val as IFMOD.StudioSystem;
+		
+		let outval = new Outval();
+		this.fmod.Studio_System_Create(outval);
+		
+		this._system = outval.get<FMOD.StudioSystem>();
 		CHECK_RESULT(this.system.getCoreSystem(outval), 'getting core system');
-		this.core = outval.val as IFMOD.System;
+		this._core = outval.get<FMOD.System>();
 		CHECK_RESULT(this.system.initialize(this.config.maxChannels, this.config.studioInitFlags, this.config.initFlags, null), 'initializing FMOD Studio'); 
 		// Audio workaround can work once core is available.
 		this.setListenerAudioWorkaround();
 
-		let banks: IFMOD.Bank[] = [];
-		// Load banks. TODO: Make a function that receives the config file and spits out Bank[]
+		let banks: FMOD.Bank[] = [];
+		
 		this.config.initLoadBanks.forEach((bankData) => {
 			bankData.names.forEach((bankName) => {
-				let flags = bankData.flags? bankData.flags : IFMOD.STUDIO_LOAD_BANK_FLAGS.NORMAL;
+				let flags = bankData.flags? bankData.flags : FMOD.STUDIO_LOAD_BANK_FLAGS.NORMAL;
 				CHECK_RESULT(this.system.loadBankFile(bankName, flags, outval), 'loading bank: ' + bankName);
-				banks.push(outval.val);
+				banks.push(outval.get<FMOD.Bank>());
 			});
 		});
 
-		// Set bank loaded check
+		// Set bank loaded check. You only need to check if the last bank is loaded
+		// since FMOD loads each bank in order.
 		let bankCheckInterval = setInterval(() => {
-			if (this.checkBanksLoaded(banks)) {
-				this.events.send('banksloaded');
+			if (this.checkBanksLoaded(banks[banks.length-1])) {
+				this.events.send(FMODLoader.Event.BANKSLOADED);
 				clearInterval(bankCheckInterval);
 			}
 		}, 100);
@@ -95,27 +143,31 @@ export class FMODLoader extends Loader {
 	 * Loading will halt here until that happens. Sends the signal when this sound has finished playing.
 	 */
 	private evTestSound = () => {
-		console.log('FMOD is testing sound');
-		let outval: any = {};
-		let key = this.config.soundTestEvent;
-		if (key.includes('event:/')) {
-			CHECK_RESULT(this.system.getEvent(key, outval), 'getting test event description via stringbank key');
-		} else {
-			CHECK_RESULT(this.system.getEventByID(parseGUID(key), outval), 'getting test event description via ID')
-		}
-
-		let desc = outval.val as IFMOD.EventDescription;
-		CHECK_RESULT(desc.createInstance(outval), 'creating test event instance');
-		let inst = outval.val as IFMOD.EventInstance;
-		CHECK_RESULT(inst.start(), 'starting test event instance');
-
-		let testSoundEndedInterval = setInterval(() => {
-			if (this.checkSoundEnded(inst)) {
-				this.events.send('testsoundended');
-				clearInterval(testSoundEndedInterval);
-				inst.release(); // destroy this EventInstance from FMOD
+		if (this.soundTest) {
+			console.log('FMOD is testing sound');
+			let outval = new Outval();
+			let key = this.config.soundTestEvent;
+			if (key.includes('event:/')) {
+				CHECK_RESULT(this.system.getEvent(key, outval), 'getting test event description via stringbank key');
+			} else {
+				CHECK_RESULT(this.system.getEventByID(parseID(key), outval), 'getting test event description via ID')
 			}
-		}, 100); // check every 100 ms
+
+			let desc = outval.get<FMOD.EventDescription>();
+			CHECK_RESULT(desc.createInstance(outval), 'creating test event instance');
+			let inst = outval.get<FMOD.EventInstance>();
+			CHECK_RESULT(inst.start(), 'starting test event instance');
+
+			let testSoundEndedInterval = setInterval(() => {
+				if (this.checkSoundEnded(inst)) {
+					this.events.send(FMODLoader.Event.SOUNDTESTEND);
+					clearInterval(testSoundEndedInterval);
+					inst.release(); // destroy this EventInstance from FMOD
+				}
+			}, 100); // check every 100 ms
+		} else {
+			this.events.send(FMODLoader.Event.SOUNDTESTEND);
+		}
 	}
 
 	private evFinish = () => {
@@ -124,62 +176,72 @@ export class FMODLoader extends Loader {
 
 		this.setListenerVisibilityChange();
 
-		this.onLoadFinish.send(this.system);
+		this.onLoadFinish.send(this._system, this.fmod);
 		this.onLoadFinish.unsubscribeAll();
+		this._system = undefined;
+		this._core = undefined;
 	}
 
 	// ================== CHECKING (inside setInterval) ==================
-	private checkSoundEnded = (instance: IFMOD.EventInstance): boolean => {
+	private checkSoundEnded = (instance: FMOD.EventInstance): boolean => {
 		this.system.update();
-		let outval: any = {};
-		CHECK_RESULT(instance.getPlaybackState(outval), 'getting playback state');
-		let state = outval.val as IFMOD.STUDIO_PLAYBACK_STATE;
-		return state === IFMOD.STUDIO_PLAYBACK_STATE.STOPPED;
+		let outval = new Outval();
+		CHECK_RESULT (instance.getPlaybackState(outval), 'getting playback state');
+		let state = outval.get<FMOD.STUDIO_PLAYBACK_STATE>();
+		return state === FMOD.STUDIO_PLAYBACK_STATE.STOPPED;
 	}
 
-	private checkBanksLoaded = (banks: IFMOD.Bank[]): boolean => {
-		let outval: any = {};
+	private checkBanksLoaded = (bank: FMOD.Bank): boolean => {
+		let outval = new Outval();
 		let areBanksLoaded = true;
-		banks.forEach((bank) => {
-			bank.getLoadingState(outval);
-			let loadingState: IFMOD.STUDIO_LOADING_STATE = outval.val;
-			if (loadingState !== IFMOD.STUDIO_LOADING_STATE.LOADED) {
-				areBanksLoaded = false;
-			}
-		});
-		return areBanksLoaded;
+		CHECK_RESULT (bank.getLoadingState(outval), 'getting bank loading state');
+		let loadingState = outval.get<FMOD.STUDIO_LOADING_STATE>();
+
+		return loadingState === FMOD.STUDIO_LOADING_STATE.LOADED;
 	}
 
 	// ==================== Set Window Listeners ===========================
+	/**
+	 * Set event to suspend audio when window is not visible and resume when it is
+	 */
 	private setListenerVisibilityChange() {
-		// Event to suspend audio when window is not visible and resume when it is
+		let core = this.core;
 		window.addEventListener('visibilitychange', (ev) => {
 			if (document.hidden) {
-				CHECK_RESULT(this.core.mixerSuspend(), 'suspending core mixer');
+				CHECK_RESULT (core.mixerSuspend(), 'suspending core mixer');
 			} else {
-				CHECK_RESULT(this.core.mixerResume(), 'resuming core mixer');
+				CHECK_RESULT (core.mixerResume(), 'resuming core mixer');
 			}
 		});
 	}
 
+	/**
+	 * Sets Chrome/iOS workaround (gesture must happen before sound plays).
+	 * Chrome/iOS will automatically suspend the audio context on page load.
+	 * When a user makes an interaction for the first time on the page,
+	 * this listener will suspend and resume the mixer to allow FMOD to run.
+	 */
 	private setListenerAudioWorkaround() {
-		// Set chrome/ios workaround (gesture must happen before sound plays)
+		let core = this.core;
 		let audioResumeEvent = 'click';
-		let audioContextResume = (ev) => {
-			CHECK_RESULT(this.core.mixerSuspend(), 'suspending core mixer');
-			CHECK_RESULT(this.core.mixerResume(), 'resuming core mixer');
-			console.log('Resuming mixer.', ev);
+		let audioContextResume = () => {
+			CHECK_RESULT(core.mixerSuspend(), 'suspending core mixer');
+			CHECK_RESULT(core.mixerResume(), 'resuming core mixer');
+			console.log('Resuming mixer.');
 			window.removeEventListener(audioResumeEvent, audioContextResume);
 		}
 		window.addEventListener(audioResumeEvent, audioContextResume);
 	}
 
 	// ===================== UTILITY =======================================
+	/**
+	 * Takes the config and processes it for defaults.
+	 */
 	private handleFMODLoaderConfigDefaults(config: FMODLoaderConfig) {
 		config.initLoadBanks = config.initLoadBanks? config.initLoadBanks : [];
 		config.preloadFileData = config.preloadFileData? config.preloadFileData : [];
 		config.maxChannels = config.maxChannels? config.maxChannels : 128;
-		config.studioInitFlags = config.studioInitFlags? config.studioInitFlags : IFMOD.STUDIO_INITFLAGS.NORMAL;
-		config.initFlags = config.initFlags? config.initFlags : IFMOD.INITFLAGS.NORMAL;
+		config.studioInitFlags = config.studioInitFlags? config.studioInitFlags : FMOD.STUDIO_INITFLAGS.NORMAL;
+		config.initFlags = config.initFlags? config.initFlags : FMOD.INITFLAGS.NORMAL;
 	}
 }

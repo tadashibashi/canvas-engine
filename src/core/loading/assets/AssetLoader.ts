@@ -90,10 +90,15 @@ export abstract class AssetLoader<T> extends Loader {
   	let jsonCache = this.manager.assets.json;
   	this.filesLoading = 0; // Reset file counter just in case
   	toLoadViaJSON.forEach((jsonConfig) => {
-  	  let json: {key: string, filepath: string}[] = JSON.parse(jsonCache.get(jsonConfig.key));
-  	  json.forEach((config) => {
-  	    toLoad.push({key: config.key, filepath: config.filepath});
-  	  });
+  		const jsonString = jsonCache.get(jsonConfig.key);
+  		if (jsonString) {
+  	  	let json: {key: string, filepath: string}[] = JSON.parse(jsonString);
+  	  	json.forEach((config) => {
+  	    	toLoad.push({key: config.key, filepath: config.filepath});
+  	  	});
+  	  } else {
+  	  	throw new Error('JSON Cache does not contain an element with key: ' + jsonConfig.key + '! Failed to load assets via JSON!');
+  	  }
   	});
   }
 

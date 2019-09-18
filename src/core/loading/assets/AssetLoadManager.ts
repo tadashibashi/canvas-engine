@@ -7,6 +7,8 @@ import { AudioLoader } from "./AudioLoader";
 
 import { Delegate } from '../../Delegate';
 import { Loader } from '../Loader';
+import { FMODLoader } from '../fmodstudio/FMODLoader';
+import { State } from '../../../components/states/State';
 
 /**
  * Something that holds the data store for assets
@@ -31,12 +33,13 @@ export class AssetLoadManager extends Loader {
   private imageLoader: ImageLoader;
   private audioLoader: AudioLoader;
 
+ 	public fmodFinished = false;
 
   /**
    * @param baseURL The path to the asset root folder
    * @param assets The object that holds the asset caches. Allows loaders to store data.
    */
-  constructor(public baseURL: string, public assets: IAssetBank) {
+  constructor(public baseURL: string, public assets: IAssetBank, private fmodLoader?: FMODLoader) {
 	  super();
 	  this.jsonLoader = new JSONLoader(this, assets.json, 'json/');
 	  this.imageLoader = new ImageLoader(this, assets.images, 'images/');
@@ -46,6 +49,11 @@ export class AssetLoadManager extends Loader {
 		this.jsonLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
 		this.imageLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
 		this.audioLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
+		if (fmodLoader) {
+			fmodLoader.onLoadFinish.subscribe(this, () => {
+				this.fmodFinished = true;
+			});
+		}
 
     this.states = new StateMachine(this);
     this.states.add('json')
@@ -58,14 +66,14 @@ export class AssetLoadManager extends Loader {
       .on('enter', this.audioLoader.load);
 
     this.states.add('finished')
-      .on('enter', this.finishLoading);
+      .on('enter', this.checkFMOD);
   }
 
   // PUBLIC API
   /**
    * Starts the loading process
    */
-  load () {
+  load = () => {
     this.isLoading = true;
     this.states.start(this.initState); // first state in the chain
   }
@@ -106,7 +114,19 @@ export class AssetLoadManager extends Loader {
     this.onLoadFinish.send();
     this.isLoading = false;
   }
-
+  
+  private checkFMOD = () => {
+  	if (this.fmodLoader) {
+  		let checkFMODInterval = setInterval(() => {
+  			if (this.fmodFinished) {
+  				this.finishLoading();
+  				clearInterval(checkFMODInterval);
+  			}
+  		}, 100);
+  	} else {
+  		this.finishLoading();
+  	}
+  }
   /**
    * This is a handler that is called when an asset type has finished loading
    * It prescribes the order of the asset type that will begin loading next.

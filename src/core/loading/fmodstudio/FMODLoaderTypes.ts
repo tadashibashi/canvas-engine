@@ -1,6 +1,18 @@
-import { IFMOD } from '../../../libraries/IFMOD/IFMOD';
+//import { FMOD } from '../../../libraries/IFMOD/index';
 
-export interface FMODLoaderConfig {
+export const FMODLoaderConfigDefaults: FMODLoaderConfig = {
+	assetBaseURL: '/',
+	initLoadBanks: [],
+	soundTestEvent: '',
+	preloadFileData: [],
+	maxChannels: 128,
+	totalMemory: 16 * 1024 * 1024,
+	studioInitFlags: FMOD.STUDIO_INITFLAGS.NORMAL,
+	initFlags: FMOD.INITFLAGS.NORMAL
+}
+
+
+export interface  FMODLoaderConfig {
 	/**
 	 * The default base path that the Loader will look for 
 	 * local assets to mount onto FMOD during preloading.
@@ -10,7 +22,7 @@ export interface FMODLoaderConfig {
 	 * A list of bank configs indicating which banks to load during FMOD initialization.
 	 * Each config can load multiple banks under the specified bank loading flags.
 	 */
-	initLoadBanks?: {
+	initLoadBanks: {
 		/**
 		 * Names, including file extension and virtual directory path if 
 		 * any set in the corresponding FMODPreloadFileData config. 
@@ -20,7 +32,7 @@ export interface FMODLoaderConfig {
 		/**
 		 * Defaults to IFMOD.STUDIO_LOAD_BANK_FLAGS.NORMAL
 		 */
-		flags?: IFMOD.STUDIO_LOAD_BANK_FLAGS;
+		flags: FMOD.STUDIO_LOAD_BANK_FLAGS;
 	}[];
 	/**
 	 * Pass either an FMOD Event Name (only if you load the .strings.bank file), 
@@ -31,27 +43,27 @@ export interface FMODLoaderConfig {
 	 * Optional preloadFileData. You can also set this via 
 	 * FMODLoader.addPreloadFiles() before loading.
 	 */
-	preloadFileData?: FMODPreloadFileData[];
+	preloadFileData: FMODPreloadFileData[];
 	/**
 	 * Maximum numbers of channels to play simultaneously.
 	 * (default) 128
 	 */
-	maxChannels?: number;
+	maxChannels: number;
 	/**
 	 * The total memory to allocate for FMOD Studio. 
 	 * (default) 64*1024*1024, which is 16mb
 	 */
-	totalMemory?: number;
+	totalMemory: number;
 	/**
 	 * Studio System Initialization Flags. 
 	 * (default) IFMOD.STUDIO_INITFLAGS.NORMAL
 	 */
-	studioInitFlags?: IFMOD.STUDIO_INITFLAGS;
+	studioInitFlags: FMOD.STUDIO_INITFLAGS;
 	/**
 	 * Core System Initialization Flags. 
 	 * (default) IFMOD.INITFLAGS.NORMAL
 	 */
-	initFlags?: IFMOD.INITFLAGS;
+	initFlags: FMOD.INITFLAGS;
 }
 
 export interface FMODPreloadFileData {
