@@ -2,20 +2,33 @@ import { ComponentManager } from '../ComponentManager';
 import { DrawableComponent } from '../DrawableComponent';
 import { GameTime } from '../../core/GameTime';
 import { Transform } from '../transform/Transform';
-import { Delegate } from '../../core/Delegate';
 
 export class GameObject extends DrawableComponent {
 	components: ComponentManager;
-	transform: Transform;
-	onDestroy = new Delegate<(gameObject: GameObject)=>void>();
-	constructor(updateOrder = 0, drawOrder = 0) {
-		super(updateOrder, drawOrder);
-		this.transform = new Transform(100);
-		this.components = new ComponentManager()
-		this.components.add(this.transform);
+
+	get transform(): Transform {
+		return this._transform as Transform;
+	}
+    private _transform: Transform | undefined;
+
+
+	/**
+	 * Scene should subscribe to this and remove all references to this object
+	 */
+    constructor(tag?: string | null, pos?: {x?: number, y?: number, z?: number}) {
+        super(tag, 0, 0);
+        if (pos) {
+            this._transform = new Transform(pos.x, pos.y, pos.z);
+        } else {
+            this._transform = new Transform();
+        }
+		    
+		this.components = new ComponentManager();
+		this.components.add(this._transform);
 	}
 
 	awake() {
+		super.awake();
 		this.components.awake();
 	}
 
@@ -29,9 +42,8 @@ export class GameObject extends DrawableComponent {
 
 	destroy() {
 		this.components.destroy();
-		this.onDestroy.send(this);		
+		this._transform = undefined;
+
 		super.destroy();
 	}
-
-
 }

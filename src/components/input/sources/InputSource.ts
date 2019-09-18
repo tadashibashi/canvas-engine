@@ -6,7 +6,7 @@ import { Delegate } from '../../../core/Delegate';
 
 export abstract class InputSource<EventType extends Event> extends Component {
 	constructor(updateOrder: number) {
-		super(updateOrder);
+		super(null, updateOrder);
 	}
 	/**
 	 * An input is a key, a button, anything that contains an axis.
@@ -30,15 +30,6 @@ export abstract class InputSource<EventType extends Event> extends Component {
 
 
 	// ============= Events ===================
-	/**
-	 * Initalize window.addEventListeners and make references with other components here.
-	 */
-	abstract awake(): void;
-
-	/**
-	 * Remove window.removeEvent listeners here
-	 */
-	abstract destroy(): void;
 
 	/**
 	 * This should be delayed to at the end of update.

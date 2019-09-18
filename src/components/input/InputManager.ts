@@ -10,7 +10,7 @@ export class InputManager extends Component {
 	keyboard: Keyboard;
 
   constructor(controllerCount = 0) {
-  	super(-1000);
+  	super(null, -1000);
   	this.pointer = new Pointer();
   	this.keyboard = new Keyboard();
   	this.sources
