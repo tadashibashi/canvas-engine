@@ -12,21 +12,29 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 	 * Subscribes to one event
 	 */
 	on(key: K, context: any, callback: F): DelegateGroup<K, F> {
-		let delegates = this.delegates;
-		if(!delegates.has(key)) {
-			delegates.set(key, new Delegate<F>());
-		} 		
-		delegates.get(key).subscribe(context, callback);	
+		const delegate = this.delegates.get(key);
+		if (delegate) {
+			delegate.subscribe(context, callback);
+		}	else {
+			console.log('Error! Delegate group does not contain the key:', key);
+		}	
 		return this;
+	}
+
+	constructor(...keys: K[]) {
+		const delegates = this.delegates;
+		keys.forEach((key) => {
+			delegates.set(key, new Delegate<F>());
+		});
 	}
 
 	/**
 	 * Removes one subscribed event handler from the specified key
 	 */
 	off(key: K, context: any, callback: F): DelegateGroup<K, F> {
-		let delegates = this.delegates;
-		if (delegates.has(key)) {
-			delegates.get(key).unsubscribe(context, callback);
+		const delegate = this.delegates.get(key);
+		if (delegate) {
+			delegate.unsubscribe(context, callback);
 		}
 		return this;
 	}
@@ -35,9 +43,9 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 	 * Removes every subscription from the specified key
 	 */
 	clear(key: K) {
-		let delegates = this.delegates;
-		if (delegates.has(key)) {
-			delegates.get(key).unsubscribeAll();
+		const delegate = this.delegates.get(key);
+		if (delegate) {
+			delegate.unsubscribeAll();
 		}
 	}
 
@@ -56,9 +64,9 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 	 * Broadcasts an event. Please make sure ...params matches the signature of the DelegateGroup.
 	 */
 	send(key: K, ...params: any[]) {
-		let delegates = this.delegates;
-		if (delegates.has(key)) {
-			delegates.get(key).send(...params);
+		const delegate = this.delegates.get(key);
+		if (delegate) {
+			delegate.send(...params);
 		}
 	}
 }
