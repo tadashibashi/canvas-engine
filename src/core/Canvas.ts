@@ -1,7 +1,7 @@
 export class DOMElementWrapper<E extends HTMLElement> {
 	element: E;
 	constructor(querySelector: string) {
-		this.element = document.querySelector(querySelector);
+		this.element = document.querySelector(querySelector) as E;
 		if (!this.element) {
 			console.log('Error! Element not found from query:', querySelector);
 		}
@@ -18,20 +18,18 @@ export class Canvas extends DOMElementWrapper<HTMLCanvasElement> {
 	virtualHeight: number;
 	get screenWidth(): number { return this.element.width};
 	get screenHeight(): number { return this.element.height};
-	backgroundColor: string;
 
-	constructor(querySelector: string, width = 320, height = 180, backgroundColor = 'black') {
+	constructor(querySelector: string, width = 320, height = 180) {
 		super(querySelector); // super constructor queries the element
 		let canvas = this.element;
 
-		this.context = canvas.getContext('2d');
+		this.context = canvas.getContext('2d') as CanvasRenderingContext2D;
 		canvas.width = width;
 		canvas.height = height;
 		canvas.style.width = width + 'px';
 		this.dpr = window.devicePixelRatio || 1;
 		this.virtualWidth = width;
 		this.virtualHeight = height;
-		this.backgroundColor = backgroundColor;
 		this.updateCanvasScale();
 		window.addEventListener('resize', this.updateCanvasScale);
 	}
@@ -41,7 +39,6 @@ export class Canvas extends DOMElementWrapper<HTMLCanvasElement> {
 		this.element.width = rect.width * this.dpr;
 		this.element.height = rect.height * this.dpr;
 		this.context.scale(this.dpr, this.dpr);
-		console.log(this.dpr);
 	}
 
 	destroy() {
