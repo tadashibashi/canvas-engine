@@ -1,12 +1,8 @@
-import { FMODLoaderConfig } from '../core/loading/fmodstudio/FMODLoaderTypes';
-import { Game } from '../components/game/Game';
-import { Game1 } from './Game1';
-
-
-
+import { Game1 } from "./Game1";
+import { FMODStudioConfig } from "../engine/audio/fmodstudio/types";
 
 window.onload = (ev: Event) => {
-	let fmodConfig: FMODLoaderConfig = {
+	let fmodConfig: FMODStudioConfig = {
 
 		studioInitFlags: 	FMOD.STUDIO_INITFLAGS.LIVEUPDATE,
 		initFlags: 			FMOD.INITFLAGS.PROFILE_ENABLE,

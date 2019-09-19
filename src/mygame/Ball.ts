@@ -1,14 +1,12 @@
-import { GameObject } from '../components/gameobjects/GameObject';
-import { GameTime } from '../core/GameTime';
-import { GraphicRenderer } from '../components/graphics/GraphicRenderer';
-import { AssetManager } from '../core/AssetManager';
-import { ICollidable } from '../core/Interfaces';
+import { GameObject } from "../engine/GameObject";
+import { ICollidable } from "../engine/physics/collisions/types";
+import { Circle } from "../engine/math/shapes/Circle";
+import { GraphicRenderer } from "../engine/graphics/GraphicRenderer";
+import { Tweener } from "../engine/tweens/Tweener";
+import { TweenFunctions } from "../engine/tweens/functions";
+import { GameTime } from "../engine/GameTime";
+import { Drawf } from "../engine/graphics/functions";
 
-import { Collisionf } from '../components/colliders/CollisionFunctions';
-import { Circle } from '../core/shapes/Circle';
-import { Draw } from '../components/graphics/DrawingFunctions';
-import { Tweener } from '../components/tweens/Tweener';
-import { TweenFunctions } from '../components/tweens/TweenFunctions';
 
 export class Ball extends GameObject implements ICollidable {
     // cache components here
@@ -61,7 +59,7 @@ export class Ball extends GameObject implements ICollidable {
         let gr = this.components.get(GraphicRenderer);
         gr.start();
         this.canvas.context.fillStyle = this.color;
-        Draw.circle(this.canvas.context, this.color, -this.collider.anchor.x, -this.collider.anchor.y, this.radius);
+        Drawf.circle(this.canvas.context, this.color, -this.collider.anchor.x, -this.collider.anchor.y, this.radius);
         gr.end();
         super.draw(gameTime);
 

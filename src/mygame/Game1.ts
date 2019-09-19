@@ -1,14 +1,14 @@
-import { Game } from '../components/game/Game';
-import { GameTime } from '../core/GameTime';
-import { GameConfig } from '../components/game/GameConfig';
-import { InputManager } from '../components/input/InputManager';
-import { AssetManager } from '../core/AssetManager';
-import { Player } from './Player';
-import { TimerManager } from '../components/timers/TimerManager';
-import { CollisionManager } from '../components/colliders/CollisionManager';
-import { KeyCodes, Input } from '../components/input/types/Types';
-import { Draw } from '../core/Draw';
-import { Ball } from './Ball';
+import { Input, KeyCodes } from "../engine/input/types";
+import { Game } from "../engine/Game";
+import { TimerManager } from "../engine/timers/TimerManager";
+import { GameConfig } from "../engine/types";
+import { Player } from "./Player";
+import { CollisionManager } from "../engine/physics/collisions/CollisionManager";
+import { InputManager } from "../engine/input/InputManager";
+import { AssetBank } from "../engine/assets/AssetBank";
+import { GameTime } from "../engine/GameTime";
+import { Ball } from "./Ball";
+import { Drawf } from "../engine/graphics/functions";
 
 interface Controls {
     left: Input;
@@ -60,7 +60,7 @@ export class Game1 extends Game {
 		super.initialization(input);
 	}
 
-	preload(assets: AssetManager) {
+	preload(assets: AssetBank) {
 		assets.load.image('images', 'images.json', true);
 		assets.load.audio('music', 'InterAct.mp3');
 
@@ -110,7 +110,7 @@ export class Game1 extends Game {
         let a = this.controls.left;
         let balls = this.components.getByTag('ball');
         if (a.axis !== 0 && balls.length < 50) {
-            this.components.add(new Ball(Math.random() * this.canvas.virtualWidth, Math.random() * this.canvas.virtualHeight, 10, Draw.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255)));
+            this.components.add(new Ball(Math.random() * this.canvas.virtualWidth, Math.random() * this.canvas.virtualHeight, 10, Drawf.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255)));
         }
 	}
 

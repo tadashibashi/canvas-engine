@@ -1,11 +1,10 @@
-import { GameObject } from '../components/gameobjects/GameObject';
-import { GameTime } from '../core/GameTime';
-import { GraphicRenderer } from '../components/graphics/GraphicRenderer';
-import { AssetManager } from '../core/AssetManager';
-import { ICollidable } from '../core/Interfaces';
-import { Rectangle } from '../core/shapes/Rectangle';
-import { Collisionf } from '../components/colliders/CollisionFunctions';
-import { Ball } from './Ball';
+import { GameObject } from "../engine/GameObject";
+import { ICollidable } from "../engine/physics/collisions/types";
+import { Rectangle } from "../engine/math/shapes/Rectangle";
+import { Ball } from "./Ball";
+import { GraphicRenderer } from "../engine/graphics/GraphicRenderer";
+import { AssetBank } from "../engine/assets/AssetBank";
+import { GameTime } from "../engine/GameTime";
 
 export class Player extends GameObject implements ICollidable {
 	// cache components here
@@ -40,7 +39,7 @@ export class Player extends GameObject implements ICollidable {
         });
         this._balls = this.manager.getByTag('ball');
         console.log(this.balls);
-		this._audioTrack = this.services.get(AssetManager).audio.get('music');
+		this._audioTrack = this.services.get(AssetBank).audio.get('music');
 		//this.audioTrack.play().catch((reason) => console.log(reason));
 		// Connection logic here
 	}
