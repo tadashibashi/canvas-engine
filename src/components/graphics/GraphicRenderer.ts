@@ -1,13 +1,23 @@
 import { DrawableComponent } from '../DrawableComponent';
 import { Transform } from '../transform/Transform';
 import { Mathf } from '../../core/Mathf';
-import { Canvas } from '../../core/Canvas';
 import { GameTime } from '../../core/GameTime';
 
 /**
  * A GraphicRenderer must be on a ComponentManager that also contains a Transform component
  */
 export class GraphicRenderer extends DrawableComponent {
+	
+	// ============== Dependencies =============== //
+	/**
+	 * Transform dependency. GraphicRenderer will render at its position.
+	 */
+	 get transform(): Transform {
+	 	return this._transform as Transform;
+	 }
+	_transform: Transform | undefined;
+
+	// ============== Properties ================= //
 	/**
 	 * Image offset in game pixel units
 	 */
@@ -20,7 +30,8 @@ export class GraphicRenderer extends DrawableComponent {
 	alpha = 1;
 
 	/**
-	 * Image rotation in radians (0 to 2PI)
+	 * Image rotation in radians (0 to 2PI).
+	 * Getter and setter angle automatically make the conversion to and from radians/degrees.
 	 */
 	 private _angle = 0;
 
@@ -47,15 +58,8 @@ export class GraphicRenderer extends DrawableComponent {
 	 */
 	pixelLock = false;
 
-	/**
-	 * Transform dependency. GraphicRenderer will render at its position.
-	 */
-	transform: Transform;
-
-	canvas: Canvas;
-
-	constructor(updateOrder = 0, drawOrder = 0) {
-		super(updateOrder, drawOrder);
+	constructor(tag?: string | null, updateOrder = 0, drawOrder = 0) {
+		super(tag, updateOrder, drawOrder);
 	}
 
 	// ================ Events =====================
@@ -64,20 +68,18 @@ export class GraphicRenderer extends DrawableComponent {
 	 * The event to safely associate other components within the manager.
 	 */
 	awake() {
-		super.awake();
-		this.transform = this.manager.get(Transform);
-		this.canvas = this.services.get(Canvas);
-	}
-	update(gameTime: GameTime) {
+        super.awake();
 
+		this._transform = this.manager.get(Transform);
 	}
+
+	update(gameTime: GameTime) {}
+
 	/**
 	 * EVENT: All drawing goes here. Must be implemented.
 	 * Make sure to use -anchor.x and -anchor.y positions when drawing to implement anchor positions.
 	 */
-	draw(gameTime: GameTime): void {
-		throw new Error('draw() is not implemented on this GraphicRenderer!');
-	}
+	draw(gameTime: GameTime): void {}
 
 	// ============ Expressive Setters ==============
 	/**
@@ -106,7 +108,7 @@ export class GraphicRenderer extends DrawableComponent {
 	 */
 	start(): void {
 		let context = this.canvas.context;
-		let position = this.transform.position;
+		let position = this.transform.getPosition();
 		let scale = this.scale;
 		context.save();
 		context.translate(position.x, position.y);
@@ -121,6 +123,11 @@ export class GraphicRenderer extends DrawableComponent {
 	 */
 	end(): void {
 		this.canvas.context.restore();
+	}
+
+	destroy() {
+		this._transform = undefined;
+		super.destroy();
 	}
 
 }
