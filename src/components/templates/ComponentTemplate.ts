@@ -5,7 +5,7 @@ import { Game } from '../game/Game';
 export class NewComponent extends Component {
 
 	constructor() {
-		super(0); // Update Order
+		super('tagname', 0); // Update Order
 	}
 
 	awake() {
