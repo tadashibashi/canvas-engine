@@ -19,7 +19,10 @@ export class Tweener extends Component {
 	 * @param duration the time in seconds
 	 */
 	tweenTo(obj: object, prop: string, endVal: number, duration: number, tweenFunction: (t: number, b: number, c: number, d: number) => number): Tween {
-		let newTween = this.make(obj, prop, endVal, duration, tweenFunction);
+        let newTween = this.make(obj, prop, endVal, duration, tweenFunction);
+        newTween.onDestroy.push((tweenid) => {
+            this.remove(tweenid);
+        });
 		this.fire(newTween);
 		return newTween;
 	}
@@ -38,7 +41,10 @@ export class Tweener extends Component {
 			this.remove(tween.id);
 			tween.reset();
 			this.tweens.push(tween);
-		}
+        }
+        tween.onDestroy.push((tweenid) => {
+            this.remove(tweenid);
+        });
 	}
 
 	setPaused(paused: boolean) {
