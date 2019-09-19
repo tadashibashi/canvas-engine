@@ -17,15 +17,19 @@ declare interface Rect {
 	/**
 	 * y-coordinate of the top-left position
 	 */
-	y: number;
+    y: number;
+    /**
+     * z-coordinate of the top-left position
+     */
+    z?: number;
 	/**
 	 * rectangle width
 	 */
-	w: number;
+	width: number;
 	/**
 	 * rectangle height
 	 */
-	h: number;
+	height: number;
 }
 
 declare interface Circ {
@@ -37,26 +41,21 @@ declare interface Circ {
 	/**
 	 * y-coordinate of the center position
 	 */
-	y: number;
+    y: number;
+
+    /**
+	 * z-coordinate of the center position
+	 */
+    z?: number;
 	
 	/**
 	 * circle radius
 	 */
-	r: number;
+	radius: number;
 }
 
 
 declare interface KeyPath {
 	key: string;
 	filepath: string;
-}
-
-declare interface TextConfig {
-	position: Vector2;
-	fontFamily: string;
-	fontSize: number;
-	text: string;
-	fillStyle?: string;
-	strokeStyle?: string;
-	textAlign?: 'start' | 'end' | 'left' | 'center' | 'right';
 }
