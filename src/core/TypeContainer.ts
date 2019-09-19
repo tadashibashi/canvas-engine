@@ -7,14 +7,14 @@ export class TypeContainer {
 	/**
 	 * @param type Constructor/ClassName of the element to search for
 	 */
-	get<T>(type: new(...any: any[]) => T): T | null {
+	get<T extends object>(type: new(...any: any[]) => T): T {
 		let arr = this.arr;
 		let index = this.indexOfType(type, this.arr);
 		if (index !== -1) {
 			return this.arr[index] as T;
 		} else {
-			console.log('Warning! ServiceContainer does not contain an item of type:', type.name, 'which was attempted to be retrieved by ServiceContainer.get()');
-			return null;
+			throw new Error('ServiceContainer does not contain an item of type: '+ type.name + ', which was attempted to be retrieved by ServiceContainer.get()');
+			return {} as T;
 		}
 	}
 
@@ -31,7 +31,7 @@ export class TypeContainer {
 	 * @param key Type to store
 	 * @param item Object to store
 	 */
-	set<T>(item: T): this {
+	add<T extends object>(item: T): this {
 		let index = this.indexOfType(item.constructor, this.arr);
 		if (index === -1) {
 			this.arr.push(item);
