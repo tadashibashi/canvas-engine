@@ -1,18 +1,16 @@
 import { Component } from "../../Component";
 import { Collision } from "./Collision";
 import { GameTime } from "../../GameTime";
-import { Collisionf } from "./functions";
 import { ICollidable } from "./types";
+import { ComponentManager } from "../../ComponentManager";
 
 export class CollisionManager extends Component {
-    private collisions: Collision<any, any>[] = [];
+    private collisions = new ComponentManager<Collision<any, any>>();
     constructor() {
         super(null, 10000); // <- update order delayed so that movement calculations come before
     }
     
     update(gameTime: GameTime) {
-        // Check all collisions
-        this.collisions.forEach((coll) => Collisionf.checkCollision(coll, true));
         this.collisions.forEach((coll) => coll.update());
     }
 
@@ -29,20 +27,18 @@ export class CollisionManager extends Component {
             return coll;
         } else {
             coll = new Collision(obj1, obj2);
-            this.collisions.push(coll);
+            this.collisions.add(coll);
             return coll;
         }
     }
 
     private get<O1 extends ICollidable, O2 extends ICollidable>(obj1: O1 | O1[], obj2: O2 | O2[]): Collision<O1, O2> | null {
-        let colls = this.collisions;
+        let colls = this.collisions.getAll();
         colls.forEach((coll) => {
             if (Object.is(obj1, coll.obj1) && Object.is(obj2, coll.obj2)) {
                 return coll;
             }
         });
         return null;
-    }
-
-	
+    }	
 }
