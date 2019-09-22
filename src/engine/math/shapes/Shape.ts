@@ -15,7 +15,10 @@ export abstract class Shape implements Vector3Like, IAnchor {
         a.x = x;
         a.y = y;
         a.z = z || a.z;
+        return this;
     }
+
+    abstract setAnchorExt(x: number, y: number, xPixels?: number, yPixels?: number): this;
 
     setPosition(x: number, y?: number, z?: number): this {
         this.x = x;

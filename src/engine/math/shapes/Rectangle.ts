@@ -21,7 +21,6 @@ export class Rectangle extends Shape implements RectLike {
         super(x, y, 0);
         this.width = width;
         this.height = height;
-        this.setAnchorExt(0.5, 0.5);
     }
 
     /**
