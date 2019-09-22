@@ -1,6 +1,6 @@
 import { Component } from "./Component";
 import { Delegate } from "./utility/Delegate";
-import { Canvas } from "./utility/Canvas";
+import { Canvas } from "./Canvas";
 import { GameTime } from "./GameTime";
 
 export abstract class DrawableComponent extends Component {
@@ -24,8 +24,11 @@ export abstract class DrawableComponent extends Component {
 	 */
 	get drawOrder() {return this._drawOrder;}
 	set drawOrder(val: number) {
-		this._drawOrder = val;
-		this.onDrawOrderChanged.send(this, val);
+		if (this._drawOrder !== val) {
+			this._drawOrder = val;
+			this.onDrawOrderChanged.send(this, val);
+		}
+		
 	}
 	private _drawOrder: number;
 

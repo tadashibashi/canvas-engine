@@ -12,33 +12,22 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	 * You can make conditionals for testing purposes with this variable.
 	 */
 	isDebug = false;
-    isEnabled = true;
+  isEnabled = true;
     
-    readonly tag: string;
+  readonly tag: string;
 
 	/**
 	 * All references to the manager must happen during or after Awake!
 	 * Make sure to call super.awake() before using this.
 	 */
-	get manager(): ComponentManager<any> {
-		return this._manager as ComponentManager<any>;
-	}
-	set manager(value: ComponentManager<any>) {
-		this._manager = value;
-	}
-	private _manager: ComponentManager | undefined;
+	manager!: ComponentManager<any>;
 
 	/**
 	 * Cached top-level services container. All calls to it must come during or after awake().
 	 * Make sure to call super.awake() before making references to it as well.
 	 */
-	get services(): TypeContainer {
-		return this._services as TypeContainer;
-	}
-	protected _services: TypeContainer | undefined;
-	setGameServices(services: TypeContainer) {
-		this._services = services;
-	}
+	protected services!: TypeContainer;
+
 	/**
 	 * An event handle that others can subscribe to when the update order changes
 	 */
@@ -48,21 +37,24 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	private _updateOrder: number;
 	get updateOrder() {return this._updateOrder;}
 	set updateOrder(val: number) {
+		if (this._updateOrder !== val) {
+			this.onUpdateOrderChanged.send(this, val);
+		}
 		this._updateOrder = val;
-		this.onUpdateOrderChanged.send(this, val);
+		
 	}
  	
 	/**
 	 * Initialize variables originating in this Component here
 	 * @param updateOrder the order that this component will be updated by a ComponentManager. (Low = earlier, High = later)
 	 */
-    constructor(tag?: string | null, updateOrder = 0) {
-        this._updateOrder = updateOrder;
-        if (tag) {
-            this.tag = tag;
-        } else {
-            this.tag = '';
-        }  
+  constructor(tag?: string | null, updateOrder = 0) {
+    this._updateOrder = updateOrder;
+		if (tag) {
+			this.tag = tag;
+		} else {
+			this.tag = '';
+		}  
 	}
 
 	/**
@@ -72,17 +64,13 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	 * so they can connect their own references.
 	 */
 	awake(): void {
-		this._services = Game.engine.services;
+		this.services = Game.engine.services;
 	}
 
 	/**
 	 * Occurs once during every game frame
 	 */
 	abstract update(gameTime: GameTime): void;
-	/**
-	 * Occus once during every game frame before update
-	 */
-	preUpdate(gameTime: GameTime) {};
 	
 	/**
 	 * Used to remove all class-level cached references and callbacks.
@@ -92,9 +80,11 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	destroy() {
 		this.onDestroy.send(this);
 		this.onDestroy.unsubscribeAll();
+		delete this.onDestroy;
 		this.onUpdateOrderChanged.unsubscribeAll();
-		this._manager = undefined;
-		this._services = undefined;
+		delete this.onUpdateOrderChanged;
+		delete this.manager;
+		delete this.services;
 	}
 
 }
