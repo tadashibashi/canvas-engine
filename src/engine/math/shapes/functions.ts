@@ -5,24 +5,25 @@ import { Point } from "./Point";
 
 export function isCircCircOverlapping(coll1: Circle, coll2: Circle): boolean {
   // Get the difference in x and y coordinates between circle centers
-  let diffX = coll1.x - coll2.x;
-  let diffY = coll1.y - coll2.y;
+  let diffX = (coll1.x - coll1.anchor.x) - (coll2.x - coll2.anchor.x);
+  let diffY = (coll1.y - coll1.anchor.y) - (coll2.y - coll2.anchor.y);
   // Find distance between the two centers (hypoteneuse)
   let dist = Math.sqrt((diffX * diffX) + (diffY * diffY));
   return (dist <= coll1.radius + coll2.radius);
 }
 
 export function isRectCircOverlapping(rectColl: Rectangle, circColl: Circle): boolean {
-  let cx = circColl.x;
-  let cy = circColl.y;
-  // find closest side
-  if (cx < rectColl.x) cx = rectColl.x;
-  else if (cx > rectColl.x + rectColl.width) cx = rectColl.x + rectColl.width;
-  if (cy < rectColl.y) cy = rectColl.y;
-  else if (cy > rectColl.y + rectColl.height) cy = rectColl.y + rectColl.height;
+  let cx = circColl.x - circColl.anchor.x;
+  let cy = circColl.y - circColl.anchor.y;
 
-  let diffX = circColl.x - cx;
-  let diffY = circColl.y - cy;
+  // find closest side
+  if (cx < rectColl.left) cx = rectColl.left;
+  else if (cx > rectColl.right) cx = rectColl.right;
+  if (cy < rectColl.top) cy = rectColl.top;
+  else if (cy > rectColl.bottom) cy = rectColl.bottom;
+
+  let diffX = circColl.x - circColl.anchor.x - cx;
+  let diffY = circColl.y - circColl.anchor.y - cy;
   let diff = Math.sqrt((diffX * diffX) + (diffY * diffY));
   return (diff <= circColl.radius);
 }
