@@ -1,5 +1,5 @@
-import { Shape } from "../../math/shapes/Shape";
+import { Collider } from "./Collider";
 
 export interface ICollidable {
-  collider: Shape;
+  collider: Collider<any>;
 }
