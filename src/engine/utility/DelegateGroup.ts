@@ -31,7 +31,7 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 	/**
 	 * Removes one subscribed event handler from the specified key
 	 */
-	off(key: K, callback: F, context: any = null): DelegateGroup<K, F> {
+	off(key: K, callback: F): DelegateGroup<K, F> {
 		const delegate = this.delegates.get(key);
 		if (delegate) {
 			delegate.unsubscribe(callback);

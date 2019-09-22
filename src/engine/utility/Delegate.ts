@@ -53,7 +53,7 @@ export class Delegate<F extends (...any: any[])=>void> {
 	send(...params: any[]): void {
 		this.handle.forEach((h) => {
 			if (h.ctx === null) {
-				h.cb(params);
+				h.cb(...params);
 			} else {
 				h.cb.call(h.ctx, ...params);
 			}				
