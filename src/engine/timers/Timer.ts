@@ -68,8 +68,8 @@ export class Timer extends Component {
                 
             if (this._time <= 0) {
                 this._time = 0;
-                this.onBuzz.send(this);
                 this._isActive = false;
+                this.onBuzz.send(this);
             }
         }
     }
