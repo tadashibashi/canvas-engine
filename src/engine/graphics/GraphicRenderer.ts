@@ -29,6 +29,7 @@ export class GraphicRenderer extends DrawableComponent {
 	 */
 	alpha = 1;
 
+	private matrix = new DOMMatrix();
 	/**
 	 * Image rotation in radians (0 to 2PI).
 	 * Getter and setter angle automatically make the conversion to and from radians/degrees.
@@ -54,9 +55,9 @@ export class GraphicRenderer extends DrawableComponent {
 	readonly scale: Vector2Like = {x: 1, y: 1};
 
 	/**
-	 * Whether or not this image will have Math.floor() applied to its render position
+	 * Whether or not this image will be rendered on the pixelRendering canvas
 	 */
-	pixelLock = false;
+	pixelRendering = false;
 
 	constructor(tag?: string | null, updateOrder = 0, drawOrder = 0) {
 		super(tag, updateOrder, drawOrder);
@@ -107,11 +108,16 @@ export class GraphicRenderer extends DrawableComponent {
 	 * end() will restore the canvas context state after all drawing has taken place.
 	 */
 	start(): void {
-		let context = this.canvas.context;
+		let context: CanvasRenderingContext2D;
+		if (this.pixelRendering) {
+			context = this.canvas.pixelCtx;
+		} else {
+			context = this.canvas.guiCtx;
+		}
 		let position = this.transform.getPosition();
 		let scale = this.scale;
-		context.save();
-		context.translate(position.x, position.y);
+		this.matrix = context.getTransform();
+		context.translate(Math.floor(position.x), Math.floor(position.y));
 		context.scale(scale.x, scale.y);
 		context.rotate(this._angle);
 		context.globalAlpha = this.alpha;
@@ -122,11 +128,17 @@ export class GraphicRenderer extends DrawableComponent {
 	 * Call this to restores canvas context to its prior state before start().
 	 */
 	end(): void {
-		this.canvas.context.restore();
+		let context: CanvasRenderingContext2D;
+		if (this.pixelRendering) {
+			context = this.canvas.pixelCtx;
+		} else {
+			context = this.canvas.guiCtx;
+		}
+		context.setTransform(this.matrix);
 	}
 
 	destroy() {
-		this._transform = undefined;
+		delete this._transform;
 		super.destroy();
 	}
 

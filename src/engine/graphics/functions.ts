@@ -1,15 +1,47 @@
+import { Rectangle } from "../math/shapes/Rectangle";
+import { IFrame } from "./types";
+
 export namespace Drawf {
     export function rectangle(context: CanvasRenderingContext2D, fillStyle: string, x: number, y: number, width: number, height: number) {
         context.fillStyle = fillStyle;
         context.fillRect(x, y, width, height);
     }
 
+    export function image(context: CanvasRenderingContext2D, image: HTMLImageElement, sourceRect: Rectangle, destRect: Rectangle) {
+        context.drawImage(image, sourceRect.left, sourceRect.top, sourceRect.width, sourceRect.height, destRect.left, destRect.top, destRect.width, destRect.height);
+    }
+
+    export function frame(context: CanvasRenderingContext2D, frame: IFrame, img: HTMLImageElement, x: number, y: number) {
+        // Rotate and translate to adjust to frame
+        context.translate(x, y);
+        let sourceWidth = frame.rect.width;
+        let sourceHeight = frame.rect.height;
+        let anchorX = frame.anchor.x;
+        let anchorY = frame.anchor.y;
+        if (frame.rotated) { 
+            context.rotate(-Math.PI*0.5); 
+            sourceWidth = frame.rect.height;
+            sourceHeight = frame.rect.width;
+            anchorX = frame.rect.height - frame.anchor.y;
+            anchorY = frame.anchor.x;
+        }
+        
+        // Draw frame image
+        image(context, img, new Rectangle(frame.rect.x, frame.rect.y, sourceWidth, sourceHeight).setAnchor(0, 0), new Rectangle(-anchorX,-anchorY, sourceWidth, sourceHeight).setAnchor(0, 0));
+        
+        // Rotate and translate back to normal
+        if (frame.rotated) { context.rotate(Math.PI*0.5); }
+        context.translate(-x, -y);
+    }
+
     export function circle(context: CanvasRenderingContext2D, fillStyle: string, x: number, y: number, radius: number) {
+        const lastFillStyle = context.fillStyle;
         context.fillStyle = fillStyle;
         context.beginPath();
         context.arc(x, y, radius, 0, Math.PI * 2, false);
         context.fill();
         context.closePath();
+        context.fillStyle = lastFillStyle;
     }
 
     export function line(context: CanvasRenderingContext2D, strokeStyle = 'gray', startPoint: Vector2Like, ...to: Vector2Like[]) {
@@ -39,8 +71,8 @@ export namespace Drawf {
     export function text(context: CanvasRenderingContext2D, config: TextConfig) {
         context.textAlign = config.textAlign || 'left';
         context.fillStyle = config.fillStyle || 'gray';
-        context.font = config.fontSize + 'px ' + config.fontFamily || '12px Times';
-        context.fillText(config.text || '', config.position.x || 0, config.position.y || 0);
+        context.font = config.fontSize + 'pt ' + config.fontFamily || '12pt Times';
+        context.fillText(config.text || '', Math.round(config.position.x) || 0, Math.round(config.position.y) || 0);
     }
 
     export function arc(context: CanvasRenderingContext2D, fillStyle: string, x: number, y: number, radius: number, startDeg: number, deg: number, counterClockwise = false) {
