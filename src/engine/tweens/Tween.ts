@@ -5,8 +5,10 @@ export class Tween {
 	private finish?: () => void;
 	private step?: (time: number, currentValue: number, currentRep?: number) => void;
 	private currentTime: number;
-	private startingValue: number;
-	private relativeEndValue: number;
+	private startingValues: number[] = [];
+	private relativeEndValues: number[] = [];
+	private endVals: number[];
+	private props: string[];
 	private duration: number;
 	private isYoyo = false;
 	private isYoyoing = false;
@@ -15,10 +17,23 @@ export class Tween {
 	private currentRepetition = 0;
 	onDestroy: ((id: number)=>void)[] = [];
 	
-	constructor(public readonly id: number, private obj: any, private prop: string, private endVal: number, duration: number, private tweenFunction: (t: number, b: number, c: number, d: number) => number) {
+	constructor(public readonly id: number, private obj: any, props: string[] | string, endVals: number[] | number, duration: number, private tweenFunction: (t: number, b: number, c: number, d: number) => number) {
 		this.currentTime = 0;
-		this.startingValue = obj[prop];
-		this.relativeEndValue = endVal - this.startingValue;
+		if (Array.isArray(props) && Array.isArray(endVals)) {
+			this.endVals = endVals;
+			this.props = props;
+			props.forEach((prop, i) => {
+				this.startingValues[i] = obj[prop];
+				this.relativeEndValues[i] = endVals[i] - this.startingValues[i];
+			});
+		} else {
+			this.endVals = [endVals as number];
+			this.props = [props as string];
+			this.startingValues[0] = obj[props as string];
+			this.relativeEndValues[0] = (endVals as number) - this.startingValues[0];
+		}
+
+		
 		this.duration = duration;
 	}
 
@@ -62,14 +77,20 @@ export class Tween {
 		}
 		let time = this.currentTime;
 
-		let val = this.tweenFunction(time, this.startingValue, this.relativeEndValue, duration);
-		if (this.obj[this.prop] != val)
-			this.obj[this.prop] = val;
-
+		let props = this.props;
+		props.forEach((prop, i) => {
+			let val = this.tweenFunction(time, this.startingValues[i], this.relativeEndValues[i], duration);
+		if (this.obj[prop] != val)
+			this.obj[prop] = val;
+		
 		// step callback
 		if (this.step) {
 			this.step(time, val, this.currentRepetition);
 		}
+		});
+		
+
+
 
 		
 		if (this.isYoyo) {
