@@ -8,11 +8,15 @@ import { InputManager } from "../engine/input/InputManager";
 import { AssetBank } from "../engine/assets/AssetBank";
 import { GameTime } from "../engine/GameTime";
 import { Ball } from "./Ball";
+import { Atlas } from "../engine/graphics/Atlas";
 import { Drawf } from "../engine/graphics/functions";
+import { Brick } from "./Brick";
 
 interface Controls {
     left: Input;
     right: Input;
+    up: Input;
+    down: Input
 }
 export class Game1 extends Game {
     readonly timers = new TimerManager(1);
@@ -20,103 +24,81 @@ export class Game1 extends Game {
         return this._controls as Controls;
     }
     private _controls: Controls | undefined;
+
+    get atlas(): Atlas {
+        return this._atlas as Atlas;
+    }
+    private _atlas: Atlas | undefined;
+
 	constructor(config: GameConfig) {
 		super(config);
 
-		let go1 = new Player(10, 10, 'green', 100, 100);
-		let go2 = new Player(200, 200, 'orange', 100, 100);
-		
-		go1.transform.children.add(go2.transform);
-
+		let go1 = new Player(this.canvas.virtualWidth/2, this.canvas.virtualHeight - 10, 'green', 65, 10);
+        let ball = new Ball(this.canvas.virtualWidth/2, this.canvas.virtualHeight/2, 4);
         const colls = new CollisionManager();
-        colls.add(go1, go2)
-            .events
-            .on('enter', this, (obj1, obj2) => {
-                console.log('I entered!');
-            })
-            .on('collide', this, (obj1, obj2) => {
-                console.log('I collided!!!');
-            })
-            .on('exit', this, (obj1, obj2) => {
-                console.log('I exited!');
-            });
 
-        
-        
+        for (let i = 0; i < 5; i++) {
+            for (let j = 0; j < 4; j++) {
+                this.components.add(new Brick(i*64, j*16 + 1));
+            }  
+        }
 
         this.components
             .add(go1)
-            .add(go2)
+            .add(ball)
             .add(colls)
+            
             .add(this.timers);
+        this.services
+            .add(colls)
 	}
 
 	initialization(input: InputManager) {
-		
         this._controls = {
             left: input.keyboard.add(KeyCodes.LEFT_ARROW),
             right: input.keyboard.add(KeyCodes.RIGHT_ARROW),
+            up: input.keyboard.add(KeyCodes.UP_ARROW),
+            down: input.keyboard.add(KeyCodes.DOWN_ARROW)
         }
 		super.initialization(input);
 	}
 
 	preload(assets: AssetBank) {
-		assets.load.image('images', 'images.json', true);
+        assets.load.json('atlas', 'texturepacker_json.json');
+        assets.load.image('images', 'images.json', true);
+        assets.load.image('atlas', 'texturepacker_json.png');
 		assets.load.audio('music', 'InterAct.mp3');
 
         super.preload(assets);
 	}
 
-    awake() {
+    awake() {     
+        const atlasData = this.assets.json.get('atlas');
+        const img = this.assets.images.get('atlas');
+        if (atlasData && img) {
+            this._atlas = new Atlas(img, JSON.parse(atlasData));
+            this.services.add(this._atlas);
+        }
         super.awake();
-
-		const engine = this.fmod;
-
-		//engine.playOneShot('event:/Silence');
-        
-		let outval: any = {};
-		engine.core.createSound('bank.fsb', FMOD.MODE.LOOP_NORMAL, null, outval);
-		let bank = outval.val as FMOD.Sound;
-        this.timers.fireAndForget(() => {
-            console.log('timer went off');
-            let inst = engine.createProgrammerInstance('event:/Programmer', (props) => {
-                bank.getSubSound(0, outval);
-                let snd = outval.val as FMOD.Sound;
-                props.sound = snd;
-                if (props.name === 'Hello') {
-                    inst.setPitch(2);
-                }
-                if (props.name === 'World') {
-                    inst.setPitch(.5);
-                }
-                console.log(props.name);
-            });
-            engine.createInstance('event:/Music').start().setParameter('Intensity', 1);
-            this.timers.fireAndForget(() => {
-                console.log('EHEHEHEHEH');
-                this.timers.fireAndForget(() => {
-                    console.log('MUWAHAHAHA');
-                }, 1);
-            }, 1);
-            //inst.start();
-        }, 60*2, false);
-
-		
 	}
-
+    fontSize = 12;
 	update(gameTime: GameTime) {
         super.update(gameTime);
+        if (this.input.keyboard.justDown(this.controls.left)) {
+            
+            this.components.add(new Ball(this.canvas.virtualWidth/2, this.canvas.virtualHeight/2, 10));
+        }  
 
-        let a = this.controls.left;
-        let balls = this.components.getByTag('ball');
-        if (a.axis !== 0 && balls.length < 50) {
-            this.components.add(new Ball(Math.random() * this.canvas.virtualWidth, Math.random() * this.canvas.virtualHeight, 10, Drawf.rgb(Math.random() * 255, Math.random() * 255, Math.random() * 255)));
-        }
-	}
+    }
 
 	draw(gameTime: GameTime) {
-		this.canvas.context.fillStyle = 'black';
-		this.canvas.context.fillRect(0, 0, this.canvas.virtualWidth, this.canvas.virtualHeight);
+        this.canvas.guiCtx.clearRect(0, 0, this.canvas.virtualWidth, this.canvas.virtualHeight);
+		this.canvas.pixelCtx.fillStyle = 'black';
+        this.canvas.pixelCtx.fillRect(0, 0, this.canvas.virtualWidth, this.canvas.virtualHeight);
+        
+        // Drawf.frame(this.canvas.context, this.atlas, 'TL_Creatures', 200, 200);
+        Drawf.text(this.canvas.guiCtx, {fillStyle: 'white', fontFamily: 'charybdis', text: Math.round(this.input.pointer.position.x) + ' ' + Math.round(this.input.pointer.position.y), fontSize: Math.floor(this.fontSize), position: {x: Math.round(this.input.pointer.position.x), y: Math.round(this.input.pointer.position.y)}
+        });
 		super.draw(gameTime);
 	}
 }

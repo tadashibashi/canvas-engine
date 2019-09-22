@@ -1,10 +1,14 @@
 import { GameObject } from "../engine/GameObject";
 import { ICollidable } from "../engine/physics/collisions/types";
 import { Rectangle } from "../engine/math/shapes/Rectangle";
-import { Ball } from "./Ball";
+import { GrowingCircle } from "./GrowingCircle";
 import { GraphicRenderer } from "../engine/graphics/GraphicRenderer";
 import { AssetBank } from "../engine/assets/AssetBank";
 import { GameTime } from "../engine/GameTime";
+import { InputManager } from "../engine/input/InputManager";
+import { Mathf } from "../engine/math/functions";
+import { Collider } from "../engine/physics/collisions/Collider";
+import { Ball } from "./Ball";
 
 export class Player extends GameObject implements ICollidable {
 	// cache components here
@@ -12,41 +16,40 @@ export class Player extends GameObject implements ICollidable {
 		return this._audioTrack as HTMLAudioElement;
 	}
     private _audioTrack: HTMLAudioElement | undefined;
-    readonly collider: Rectangle;
+    readonly collider: Collider<Rectangle>;
     get balls(): Ball[] {
         return this._balls as Ball[];
     }
     private _balls: Ball[] | undefined;
 
-
 	constructor(
 		x: number, y: number, 
 		private color: string, 
 		private width: number, 
-        private height: number) {
+		private height: number
+		) {
         super('player', { x: x, y: y });
  
         this.components.add(new GraphicRenderer());
-        this.collider = new Rectangle(x, y, width, height);
-
-        
+		this.collider = new Collider(new Rectangle(x, y, width, height));
+		this.collider.setAnchorExt(.5, 1); 
 	}
 
 	awake() {
         super.awake();
-        this.transform.onChangePosition.subscribe(this, (pos) => {
-            this.collider.setPosition(pos.x, pos.y, pos.z);
-        });
+        this.collider.syncToTransform(this.transform);
         this._balls = this.manager.getByTag('ball');
-        console.log(this.balls);
+        //console.log(this.balls);
 		this._audioTrack = this.services.get(AssetBank).audio.get('music');
 		//this.audioTrack.play().catch((reason) => console.log(reason));
 		// Connection logic here
 	}
 
 	update(gameTime: GameTime) {
-		let pos = this.transform.getPosition(true);
-        this.transform.setPosition(pos.x, pos.y, pos.z);
+		const pos = this.transform.getPosition(true);
+		const input = this.services.get(InputManager);
+		
+        this.transform.setPosition(Mathf.clamp(input.pointer.position.x, this.width * .5, this.canvas.virtualWidth - this.width * .5), pos.y);
         
 		if (pos.x > this.canvas.virtualWidth) {
 			if (this._audioTrack) this._audioTrack.pause();
@@ -60,24 +63,21 @@ export class Player extends GameObject implements ICollidable {
         //        });
         //    }
         //});
-		super.update(gameTime);
-		
+		super.update(gameTime);		
 		// Update logic here	
 	}
 
 	draw(gameTime: GameTime) {
 		let gr = this.components.get(GraphicRenderer);
 		gr.start();
-		this.canvas.context.fillStyle = this.color;
-		this.canvas.context.fillRect(-this.collider.anchor.x, -this.collider.anchor.y, this.width, this.height);
+		this.canvas.guiCtx.fillStyle = this.color;
+		this.canvas.guiCtx.fillRect(-this.collider.anchor.x, -this.collider.anchor.y, this.width, this.height);
 		gr.end();
 		super.draw(gameTime);
-	
 	}
 
 	destroy() {
 		// Remove cached references
-
 		super.destroy();
 	}
 }
