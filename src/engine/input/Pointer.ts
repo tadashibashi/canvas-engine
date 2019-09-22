@@ -46,8 +46,8 @@ export class Pointer extends InputSource<PointerEvent> {
 		let rect = canvas.element.getBoundingClientRect();
 		let root = document.documentElement;
 
-		let _x = (x - rect.left -(root.scrollLeft*this.scale)) * this.scale;
-		let _y = (y - rect.top -(root.scrollTop*this.scale)) * this.scale;
+		let _x = (x - rect.left) * this.scale;
+		let _y = (y - rect.top) * this.scale;
 		return {x: _x, y: _y};
 	}
 
