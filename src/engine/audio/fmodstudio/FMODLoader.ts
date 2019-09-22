@@ -1,5 +1,5 @@
 import { FMODPreloadFileData, FMODStudioConfig } from './types';
-import { CHECK_RESULT, parseID } from './functions';
+import { CHECK_RESULT, parseID, globals } from './functions';
 import { Loader } from '../../assets/loading/Loader';
 import { DelegateGroup } from '../../utility/DelegateGroup';
 import { Delegate } from '../../utility/Delegate';
@@ -105,7 +105,6 @@ export class FMODLoader extends Loader {
 		// make sure fmod object is injected
 		if (!this.fmod.Studio_System_Create) {
 			throw new Error('Warning! FMOD Object has not been initialized!');
-			return;
 		}
 		console.log('FMOD Runtime has been initialized. Loading banks...');
 		
