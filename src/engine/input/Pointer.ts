@@ -36,13 +36,19 @@ export class Pointer extends InputSource<PointerEvent> {
 	}
 
 	updatePointerPos = (ev: PointerEvent) => {
+		let pos = this.screenToWorld(ev.clientX, ev.clientY);
+		this.position.x = pos.x;
+		this.position.y = pos.y;
+	}
+
+	screenToWorld(x: number, y: number): Vector2Like {
 		let canvas = Game.engine.services.get(Canvas);
 		let rect = canvas.element.getBoundingClientRect();
 		let root = document.documentElement;
 
-		// Take positional, scrolling, and scale offset into account. Screen to World Conversion.
-		this.position.x = (ev.clientX - rect.left - root.scrollLeft) * this.scale;
-		this.position.y = (ev.clientY - rect.top - root.scrollTop) * this.scale;
+		let _x = (x - rect.left -(root.scrollLeft*this.scale)) * this.scale;
+		let _y = (y - rect.top -(root.scrollTop*this.scale)) * this.scale;
+		return {x: _x, y: _y};
 	}
 
 	destroy() {
