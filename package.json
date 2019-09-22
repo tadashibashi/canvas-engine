@@ -2,11 +2,18 @@
   "name": "canvasengine",
   "version": "0.0.1",
   "description": "Modular Component-based Engine for HTML5 Canvas",
-  "main": "index.html",
+  "private": true,
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "terser-webpack-plugin": "^2.1.0",
+    "ts-loader": "^6.1.0",
+    "typescript": "^3.6.3",
+    "webpack": "^4.40.2",
+    "webpack-cli": "^3.3.9"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
