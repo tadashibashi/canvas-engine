@@ -4,7 +4,7 @@ import { GameTime } from "./GameTime";
 import { GameConfig } from "./types";
 import { TypeContainer } from "./utility/TypeContainer";
 import { AssetBank } from "./assets/AssetBank";
-import { Canvas } from "./utility/Canvas";
+import { Canvas } from "./Canvas";
 import { InputManager } from "./input/InputManager";
 import { FMODEngine } from "./audio/fmodstudio/FMODEngine";
 import { FMODLoader } from "./audio/fmodstudio/FMODLoader";
@@ -60,11 +60,11 @@ export class Game implements IUpdatable, IDrawable {
 			// we can have some kind of lobby-like place to wait for 
 			// user interaction.
 			fmodLoader = new FMODLoader(config.audio.fmodConfig);
-			fmodLoader.onLoadFinish.subscribe(this, (system, fmod) => {
+			fmodLoader.onLoadFinish.subscribe((system, fmod) => {
 				this._fmod = new FMODEngine(fmod, system);
 				this.services.add(this._fmod);
 				this.components.add(this._fmod);
-			});
+			}, this);
 			fmodLoader.load();
 		}
 
@@ -99,7 +99,7 @@ export class Game implements IUpdatable, IDrawable {
 	}
 
 	protected preload(assets: AssetBank) {
-		assets.load.onLoadFinish.subscribe(this, this.awake);
+		assets.load.onLoadFinish.subscribe(this.awake, this);
 		assets.load.load();
 	}
 
@@ -115,10 +115,6 @@ export class Game implements IUpdatable, IDrawable {
 	awake() {
 		this.components.awake();
 		this.run(0);
-	}
-
-	preUpdate(gameTime: GameTime) {
-		this.components.preUpdate(gameTime);	
 	}
 
 	update(gameTime: GameTime) {
