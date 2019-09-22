@@ -1,14 +1,12 @@
 import { CHECK_RESULT } from "./functions";
 import { IDestroyable } from "../../types/interfaces";
 import { Delegate } from "../../utility/Delegate";
+import { DelegateGroup } from "../../utility/DelegateGroup";
 
 
 export class EventInstance implements IDestroyable {
 	
-	protected get instance(): FMOD.EventInstance {
-		return this._instance as FMOD.EventInstance;
-	}
-	private _instance: FMOD.EventInstance | undefined;
+	protected instance!: FMOD.EventInstance;
 
 	private _callbackFlags = FMOD.STUDIO_EVENT_CALLBACK_TYPE.ALL;
 	onDestroy = new Delegate<(instance: EventInstance) => void>();
@@ -86,7 +84,7 @@ export class EventInstance implements IDestroyable {
 	}
 
 	constructor(eventInstance: FMOD.EventInstance, callbackFlags = FMOD.STUDIO_EVENT_CALLBACK_TYPE.ALL) {
-		this._instance = eventInstance;
+		this.instance = eventInstance;
 		this.setCallbackFlags(callbackFlags);
 		Object.seal(this.on);
 	}
@@ -254,6 +252,7 @@ export class EventInstance implements IDestroyable {
 		} else {
 			let values = value as number[];
 			this.instance.setParametersByIDs(id, values, values.length, ignoreSeekspeed);
+			
 		}
 		return this;
 	}
@@ -329,9 +328,8 @@ export class EventInstance implements IDestroyable {
 	 * Stops and releases the event instance
 	 */
 	destroy(): void {
-		CHECK_RESULT( this.instance.release(), 
-			'releasing event instance');
+		CHECK_RESULT( this.instance.release(), 'releasing event instance');
 		this.stop();
-		this.instance
+		delete this.instance;
 	}
 }

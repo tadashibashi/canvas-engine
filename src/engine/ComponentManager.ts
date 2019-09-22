@@ -10,7 +10,6 @@ import { ArrayMap } from "./utility/ArrayMap";
  */
 export class ComponentManager<T extends Component = Component> extends DrawableComponent {
     private components: T[] = [];
-    
 	private drawList: DrawableComponent[] = [];
     private activated = false;
 	onAdded = new Delegate<(component: T) => void>();
@@ -65,7 +64,23 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
             }
         }
         return componentsOfType;
-    }
+	}
+
+	/**
+	 * For own handling. Be careful as this is the actual reference to the components.
+	 * Its order is the update order.
+	 */
+	getAll() {
+		return this.components;
+	}
+
+	/**
+	 * For own handling. Be careful as this is the actual reference to the drawList.
+	 * Its order is the draw order.
+	 */
+	getAllDrawable() {
+		return this.drawList;
+	}
 
 	/**
 	 * Add a component to the manager, return this for chaining add
