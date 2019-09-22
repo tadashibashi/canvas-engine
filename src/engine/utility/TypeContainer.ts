@@ -39,4 +39,8 @@ export class TypeContainer {
 		}
 		return this;
 	}
+
+	log() {
+		console.log('TypeContainer contents:', this.arr);
+	}
 }
