@@ -107,8 +107,7 @@ export class Game implements IUpdatable, IDrawable {
 	private run = (time: number) => {
 		window.requestAnimationFrame(this.run);
 		let gameTime = this.gameTime;	
-        gameTime.update(time);
-        this.preUpdate(gameTime);
+    gameTime.update(time);
 		this.update(gameTime);
 		this.draw(gameTime);	
 	}

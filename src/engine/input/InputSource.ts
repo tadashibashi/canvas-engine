@@ -42,13 +42,6 @@ export abstract class InputSource<EventType extends Event> extends Component {
 		  let input = inputs[i];
 		  input.lastAxis = input.axis;
 		}
-	}
-
-	/**
-	 * Pre-update should be called before all other updates. 
-	 * Processing of input events from the queue happens here.
-	 */
-	preUpdate(gameTime: GameTime) {
 		// This will shift the array queue forward and process the first Input in the array in onInput
 		if (this.eventQueue.length > 0) {
 		  let ev = this.eventQueue.shift();
