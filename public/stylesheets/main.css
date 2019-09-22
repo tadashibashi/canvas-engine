@@ -2,9 +2,19 @@ body, html {
 	margin: 0;
 }
 
-#canvas {
+canvas {
 	padding: 0;
-/*	width: 75%;*/
 	margin: 1em auto;
 	display: block;
+	image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+	image-rendering: crisp-edges;
+	position: absolute;
+}
+
+
+@font-face {
+	font-family: 'charybdis';
+	src: url('../fonts/charybdis.ttf');
 }
