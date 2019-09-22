@@ -4,10 +4,7 @@
 
 # Other Libs
 node_modules/
-src/libraries/fmodstudio/README.md
-src/libraries/fmodstudio/LICENSE
-src/libraries/fmodstudio/.git
-src/libraries/fmodstudio/StarterTutorial.md
+src/libraries/
 
 # Assets
 public/audio/banks/
