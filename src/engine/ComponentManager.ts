@@ -2,6 +2,7 @@ import { Component } from "./Component";
 import { DrawableComponent } from "./DrawableComponent";
 import { Delegate } from "./utility/Delegate";
 import { GameTime } from "./GameTime";
+import { ArrayMap } from "./utility/ArrayMap";
 
 /**
  * A class that acts as a container for Components and DrawableComponents. (It is a DrawableComponent itself!)
@@ -9,16 +10,16 @@ import { GameTime } from "./GameTime";
  */
 export class ComponentManager<T extends Component = Component> extends DrawableComponent {
     private components: T[] = [];
-    private tagBank = new Map<string, T[]>(); 
+    
 	private drawList: DrawableComponent[] = [];
     private activated = false;
-	readonly onAdded = new Delegate<(component: T) => void>();
-	readonly onRemoved = new Delegate<(component: T) => void>();
+	onAdded = new Delegate<(component: T) => void>();
+	onRemoved = new Delegate<(component: T) => void>();
 
     constructor(tag?: string | null, updateOrder = 0, drawOrder = 0) {
         super(tag, updateOrder, drawOrder);
-        this.onAdded.subscribe(this, this.setObjToTagBank);
-        this.onRemoved.subscribe(this, this.removeObjFromTagBank);
+        this.onAdded.subscribe((component) => { this.tagBank.addToArray(component.tag, component)}, this);
+        this.onRemoved.subscribe((component) => {this.tagBank.removeFromArray(component.tag, component)}, this);
     }
 	// ============ COMPONENT MANAGEMENT (add, get, remove, sort) ============= //
 	/**
@@ -37,50 +38,17 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
     }
     get length(): number {
         return this.components.length;
-    }
-    // Maybe put tagBank into a class...
-    private setObjToTagBank = (obj: T): void => {
-        const tag = obj.tag;
-        if (tag === '') return; // Do not put in items without tags
-
-        let arr = this.tagBank.get(tag);
-        if (!arr) {
-            arr = this.setNewTagBankEntry(tag);
-        }
-        arr.push(obj);
-    }
-    private removeObjFromTagBank = (obj: T): void => {
-        const tag = obj.tag;
-        if (tag === '') return; // Do not remove items without tags
-        const arr = this.tagBank.get(tag);
-        if (!arr) {
-            console.log('Error! Could not remove object from the ComponentManager tagBank because tag entry does not exist!');
-        } else {
-            const index = arr.indexOf(obj);
-            if (index !== -1) {
-                arr.splice(index, 1);
-            }
-        }
-    }
+	}
+	private tagBank = new ArrayMap<string, T>(true);
+	
     /**
-     * This provides you with a reference to an array of all tagged items, which will expand 
-     * and delete automatically as elements are pushed and spliced. If there is no array established
-     * for the indicated tag, this will create a new entry for that tag, to be populated in the future.
+     * This provides you with a reference to an array of all like-tagged items, which will expand 
+     * and delete automatically as elements are pushed and spliced. If there is no array existing
+     * for the indicated tag, a new one will be created for that tag, to be populated in the future.
      * @param tag The tag of the array to find
      */
     getByTag(tag: string): T[] {
-        const arr = this.tagBank.get(tag);
-        if (arr) {
-            return arr;
-        } else {
-            console.log('Warning! No components of queried tag name:' + tag + ', exists in this ComponentManager! Creating a new entry, and returning its empty array for potential future additions to this tag key');
-            return this.setNewTagBankEntry(tag);
-        }
-    }
-    private setNewTagBankEntry(tag: string): T[] {
-        const newArr = [] as T[];
-        this.tagBank.set(tag, newArr);
-        return newArr;
+        return this.tagBank.get(tag);
     }
 
     /**
@@ -112,10 +80,10 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 			// Add component to the appropriate arrays, and add listeners for on order changed.
 			if (component instanceof DrawableComponent) {
 				this.drawList.unshift(component);
-				component.onDrawOrderChanged.subscribe(this, this.sortDrawListOrder);
+				component.onDrawOrderChanged.subscribe(this.sortDrawListOrder, this);
 			}
-			component.onDestroy.subscribe(this, this.remove);
-			component.onUpdateOrderChanged.subscribe(this, this.sortUpdateListOrder);
+			component.onDestroy.subscribe(this.remove, this);
+			component.onUpdateOrderChanged.subscribe(this.sortUpdateListOrder, this);
 			this.components.unshift(component);
 			
             if (this.activated) {// after scene/game start will auto awake newly created component
@@ -133,10 +101,10 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
     remove(component: Component) {
 		let index = this.components.indexOf(component as T);
 		if (index !== -1) {
-			component.onUpdateOrderChanged.unsubscribe(this, this.sortUpdateListOrder);
-			component.onDestroy.unsubscribe(this, this.remove);
+			component.onUpdateOrderChanged.unsubscribe(this.sortUpdateListOrder);
+			component.onDestroy.unsubscribe(this.remove);
 			if (component instanceof DrawableComponent) {
-				component.onDrawOrderChanged.unsubscribe(this, this.sortDrawListOrder);
+				component.onDrawOrderChanged.unsubscribe(this.sortDrawListOrder);
 				let drawIndex = this.drawList.indexOf(component as DrawableComponent);
 				this.drawList.splice(drawIndex, 1);
 			}
@@ -224,17 +192,6 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 	}
 
 	/**
-	 * Calls every component's preUpdate in this ComponentManager
-	 */
-	preUpdate(gameTime: GameTime) {
-		this.forEach((c) => {
-			if (c.isEnabled) {
-				c.preUpdate(gameTime);
-			}
-		});
-	}
-
-	/**
 	 * Calls every DrawableComponent's draw method in this ComponentManager
 	 */
 	draw(gameTime: GameTime) {
@@ -256,6 +213,7 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 		}
 
 		this.onAdded.unsubscribeAll();
+		delete this.onAdded;
 		this.onRemoved.unsubscribeAll();
 		this.components = [];
 		this.drawList = [];
