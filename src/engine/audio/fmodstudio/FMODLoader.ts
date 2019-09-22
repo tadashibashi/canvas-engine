@@ -42,24 +42,25 @@ export class FMODLoader extends Loader {
 
 	constructor(config: FMODStudioConfig) {
 		super();
+		// Pass the fmod instance to the functions module to allow performance of error checking.
+		globals.fmod = this.fmod;
 		// Handle config defaults
 		this.handleFMODLoaderConfigDefaults(config);
 		this.config = config;
-
 		// Attach events
 		this.events
-			.on(FMODLoader.Event.PRELOAD, this, () => {
+			.on(FMODLoader.Event.PRELOAD, () => {
 				this.evPreload(this.config.preloadFileData);
-			})
-			.on(FMODLoader.Event.RUNTIMEINIT, this, () => {
+			}, this)
+			.on(FMODLoader.Event.RUNTIMEINIT, () => {
 				this.evRuntimeInitialized();
-			})
-			.on(FMODLoader.Event.BANKSLOADED, this, () => {
+			}, this)
+			.on(FMODLoader.Event.BANKSLOADED, () => {
 				this.evTestSound();
-			})
-			.on(FMODLoader.Event.SOUNDTESTEND, this, () => {
+			}, this)
+			.on(FMODLoader.Event.SOUNDTESTEND, () => {
 				this.evFinish();
-			});
+			}, this);
 	}
 
 	load = () => {

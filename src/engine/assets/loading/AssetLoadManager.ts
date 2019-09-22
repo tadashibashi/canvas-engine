@@ -41,27 +41,27 @@ export class AssetLoadManager extends Loader {
 	  this.audioLoader = new AudioLoader(this, assets.audio, 'audio/');
 
 	  // Attach callbacks
-		this.jsonLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
-		this.imageLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
-		this.audioLoader.onLoadFinish.subscribe(this, this.finishedLoadingAssetType);
+		this.jsonLoader.onLoadFinish.subscribe(this.finishedLoadingAssetType, this);
+		this.imageLoader.onLoadFinish.subscribe(this.finishedLoadingAssetType, this);
+		this.audioLoader.onLoadFinish.subscribe(this.finishedLoadingAssetType, this);
 		if (fmodLoader) {
-			fmodLoader.onLoadFinish.subscribe(this, () => {
+			fmodLoader.onLoadFinish.subscribe(() => {
 				this.fmodFinished = true;
-			});
+			}, this);
 		}
 
     this.states = new StateMachine(this);
     this.states.add('json')
-      .on('enter', this.jsonLoader.load);
+      .on('enter', this.jsonLoader.load, this.jsonLoader);
 
     this.states.add('images')
-      .on('enter', this.imageLoader.load);
+      .on('enter', this.imageLoader.load, this.imageLoader);
 
     this.states.add('audio')
-      .on('enter', this.audioLoader.load);
+      .on('enter', this.audioLoader.load, this.audioLoader);
 
     this.states.add('finished')
-      .on('enter', this.checkFMOD);
+      .on('enter', this.checkFMOD, this);
   }
 
   // PUBLIC API

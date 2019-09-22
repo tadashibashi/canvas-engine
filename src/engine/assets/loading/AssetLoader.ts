@@ -3,6 +3,7 @@ import { Loader } from "./Loader";
 import { Delegate } from "../../utility/Delegate";
 
 import { AssetLoadManager } from "./AssetLoadManager";
+import { Debug } from "../../Debug";
 
  
 /**
@@ -31,7 +32,7 @@ export abstract class AssetLoader<T> extends Loader {
 
   constructor(public manager: AssetLoadManager, public cache: Map<string, T>, public subURL: string) {
   	super();
-  	this.onFileLoaded.subscribe(this, this.onFileLoadedHandler);
+  	this.onFileLoaded.subscribe(this.onFileLoadedHandler, this);
   }
 
   /**
@@ -75,9 +76,7 @@ export abstract class AssetLoader<T> extends Loader {
         this.filesLoading += 1; // Increase the currently loading counter by one
         this.fetch(data.key, this.manager.baseURL + this.subURL + data.filepath);
       } else {
-      	if (this.isDebug) {
-        	console.log("The key,", data.key, "is already cached. Cancelling loading this file" + data.key);
-      	}
+        Debug.log("The key,", data.key, "is already cached. Cancelling loading this file" + data.key);
       }
     });
     // If filesLoading is zero, this means no files were were loaded
@@ -121,7 +120,7 @@ export abstract class AssetLoader<T> extends Loader {
    * @param filepath Filepath where item was found
    */
   private onFileLoadedHandler = (item: T, key: string, filepath: string): void => {
-    console.log('Loaded', item, '"'+key+'"', 'at:', filepath);
+     console.log('Loaded', item, '"'+key+'"', 'at:', filepath);
     this.cache.set(key, item); // load file in the cache
     this.filesLoading --; // subtract from file counter
     // If all files are finished

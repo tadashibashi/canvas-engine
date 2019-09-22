@@ -1,6 +1,6 @@
 import { InputSource } from "./InputSource";
 import { Game } from "../Game";
-import { Canvas } from "../utility/Canvas";
+import { Canvas } from "../Canvas";
 import { GameTime } from "../GameTime";
 
 export class Pointer extends InputSource<PointerEvent> {
@@ -8,17 +8,17 @@ export class Pointer extends InputSource<PointerEvent> {
 	scale: number = 1;
 
 	constructor() {
-		super(1000);
+		super(-9999);
 	}
 
 	awake() {
 		super.awake();
 		let canvas = Game.engine.services.get(Canvas) as Canvas;
-		this.scale = canvas.element.width/canvas.element.clientWidth/window.devicePixelRatio;
+		this.scale = canvas.element.width / canvas.element.clientWidth / window.devicePixelRatio / canvas.scale;
 		window.addEventListener('pointermove', this.updatePointerPos);
 		window.addEventListener('pointerdown', this.queueEvent);
 		window.addEventListener('pointerup', this.queueEvent);
-		this.onInput.subscribe(this, this.processButtonPress);
+		this.onInput.subscribe(this.processButtonPress, this);
 	}
 
 	update(gameTime: GameTime) {

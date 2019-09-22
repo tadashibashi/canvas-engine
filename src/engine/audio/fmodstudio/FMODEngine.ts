@@ -63,7 +63,7 @@ export class FMODEngine extends Component {
 		let snd: FMOD.Sound;
 		
 		inst.setCallbackFlags(FMOD.STUDIO_EVENT_CALLBACK_TYPE.CREATE_PROGRAMMER_SOUND | FMOD.STUDIO_EVENT_CALLBACK_TYPE.DESTROY_PROGRAMMER_SOUND);
-		inst.on.createprogrammersound.subscribe(this, (ev, props) => {
+		inst.on.createprogrammersound.subscribe((ev, props) => {
 			let outval: any = {};
 			if (this.fmod.CREATESOUNDEXINFO) {
 				CHECK_RESULT( this.core.createSound(fsbPath, FMOD.MODE.LOOP_NORMAL, this.fmod.CREATESOUNDEXINFO(), outval), 'creating fsb FMOD.Sound');
@@ -71,12 +71,12 @@ export class FMODEngine extends Component {
 			snd = outval.val as FMOD.Sound;
 			CHECK_RESULT( snd.getSubSound(subsoundIndex, outval), 'getting subsound from fsb');
 			props.sound = outval.val as FMOD.Sound;
-		});
-		inst.on.destroyprogrammersound.subscribe(this, (ev, props) => {
+		}, this);
+		inst.on.destroyprogrammersound.subscribe((ev, props) => {
 			CHECK_RESULT( props.sound.release(), 'releasing child sound' );
 			CHECK_RESULT( snd.release(), 'releasing parent fsb sound');
 			inst.destroy();
-		});
+		}, this);
 		return inst;
 	}
 
@@ -90,12 +90,12 @@ export class FMODEngine extends Component {
 		flags: FMOD.STUDIO_EVENT_CALLBACK_TYPE = FMOD.STUDIO_EVENT_CALLBACK_TYPE.CREATE_PROGRAMMER_SOUND | FMOD.STUDIO_EVENT_CALLBACK_TYPE.DESTROY_PROGRAMMER_SOUND
 	): EventInstance {
 		let inst = this.createInstance(event, flags);
-		inst.on.createprogrammersound.subscribe(this, (ev, props) => {
+		inst.on.createprogrammersound.subscribe((ev, props) => {
 			onCreateProgrammerSound(props);
-		});
-		inst.on.destroyprogrammersound.subscribe(this, (ev, props) => {
+		}, this);
+		inst.on.destroyprogrammersound.subscribe((ev, props) => {
 			//props.sound.release();
-		});
+		}, this);
 		return inst;
 	}
 
@@ -103,7 +103,7 @@ export class FMODEngine extends Component {
 	 * Helper that retrieves an event, then immediately plays and releases it: fire-and-forget.
 	 * 
 	 */
-	playOneShot(event: FMODKey): void {
+	playOneShot(event: FMODKey): EventInstance {
 		let ev = this.getEvent(event);
 		let outval: any = {};
 		CHECK_RESULT( ev.isOneshot(outval), 'getting isOneshot from event description' );
@@ -113,8 +113,10 @@ export class FMODEngine extends Component {
 			let inst = outval.val as FMOD.EventInstance;
 			CHECK_RESULT( inst.start(), 'starting oneshot event instance');
 			CHECK_RESULT( inst.release(), 'releasing oneshot event instance' );
+			return new EventInstance(inst);
 		} else {
 			alert('Event is not a oneshot!');
+			throw new Error('FMOD Event Is not a OneShot!');
 		}
 	}
 
@@ -128,6 +130,5 @@ export class FMODEngine extends Component {
 		this._fmod = undefined;
 		super.destroy();
 	}
-
 
 }

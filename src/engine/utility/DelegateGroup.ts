@@ -6,15 +6,15 @@ import { Delegate } from './Delegate';
  * @type F The type of function contained in this DelegateGroup
  */
 export class DelegateGroup<K, F extends (...any: any[])=>void> {
-	private readonly delegates = new Map<K, Delegate<F>>();
+	private delegates = new Map<K, Delegate<F>>();
 	
 	/**
 	 * Subscribes to one event
 	 */
-	on(key: K, context: any, callback: F): DelegateGroup<K, F> {
+	on(key: K, callback: F, context: any = null): DelegateGroup<K, F> {
 		const delegate = this.delegates.get(key);
 		if (delegate) {
-			delegate.subscribe(context, callback);
+			delegate.subscribe(callback, context);
 		}	else {
 			console.log('Error! Delegate group does not contain the key:', key);
 		}	
@@ -31,10 +31,10 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 	/**
 	 * Removes one subscribed event handler from the specified key
 	 */
-	off(key: K, context: any, callback: F): DelegateGroup<K, F> {
+	off(key: K, callback: F, context: any = null): DelegateGroup<K, F> {
 		const delegate = this.delegates.get(key);
 		if (delegate) {
-			delegate.unsubscribe(context, callback);
+			delegate.unsubscribe(callback);
 		}
 		return this;
 	}
@@ -58,6 +58,20 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 			delegate.unsubscribeAll();
 		});
 		delegates.clear();
+		delete this.delegates;
+	}
+
+	/**
+	 * Returns the length of the delegate or -1 if an invalid key
+	 * @param key key of the delegate to find the length of
+	 */
+	length(key: K) {
+		const delegate = this.delegates.get(key);
+		if (delegate) {
+			return delegate.length;
+		} else {
+			return -1;
+		}
 	}
 
 	/**

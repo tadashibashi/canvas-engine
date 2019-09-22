@@ -20,9 +20,9 @@ export class TimerManager extends Component {
         const timers = this.timers;
         for (let i = numTimers - 1; i >= 0; i--) {
             timers[i] = new Timer();
-            timers[i].onBuzz.subscribe(this, (timer) => {
+            timers[i].onBuzz.subscribe((timer) => {
                 this.onBuzz.send(i);
-            });
+            }, this);
         }
     }
 
@@ -45,12 +45,12 @@ export class TimerManager extends Component {
      * @param time The time, in either seconds or game ticks
      * @param isDelta Time Unit, TRUE: Delta Seconds. FALSE: Game Ticks.
      */
-    fireAndForget(callback: () => void, time: number, isDelta = true): Timer {
+    fireAndForget(time: number, callback: () => void, isDelta = true): Timer {
         const timer = new Timer(isDelta);
-        timer.onBuzz.subscribe(this, (t) => {
+        timer.onBuzz.subscribe((t) => {
             this.toDestroy.push(t);
             callback();
-        });
+        }, this);
         timer.start(time);
         this.tempTimers.push(timer);
         return timer;

@@ -2,18 +2,27 @@ import { Component } from "../Component";
 import { State } from "./State";
 import { Delegate } from "../utility/Delegate";
 import { GameTime } from "../GameTime";
+import { DelegateGroup } from "../utility/DelegateGroup";
+
+export class StateQueue<T> {
+  current: State<T> | null = null;
+  last: State<T> | null = null;
+}
 
 export class StateMachine<T> extends Component {
 	private states: Map<T, State<T>>;
-  private state: State<T> | undefined = undefined;
+  private queue: StateQueue<T> = {
+    current: null, last: null
+  };
   private isPlaying: boolean = false;
-	private _timeInState: number = 0;
+  private _timeInState: number = 0;
+  private gameTime = new GameTime();
 	get timeInState() {return this._timeInState;}
 
 	/**
 	 * Subscribe to get notifications of state changes.
 	 */
-	readonly onStateChanged = new Delegate<(newState: T, lastState?: T) => void>();
+	onStateChanged = new Delegate<(newState: T, lastState?: T) => void>();
 
 	constructor(private context: any) {
 		super();
@@ -22,10 +31,13 @@ export class StateMachine<T> extends Component {
 
   // ============= EVENT CALLBACKS ================================
   update(gameTime: GameTime): void {
-    let state = this.state;
-    if (state && this.isPlaying && state.has(State.Event.UPDATE)) {
-    	this._timeInState += gameTime.deltaSec;
-      state.run(State.Event.UPDATE, this.context, gameTime, this._timeInState);
+    // Replace temp GameTime with the Game's GameTime
+    if (this.gameTime !== gameTime) this.gameTime = gameTime;
+
+    let state = this.queue.current;
+    if (state && this.isPlaying) {
+      this._timeInState += gameTime.deltaSec;
+      state.run(State.Event.UPDATE, gameTime, this.timeInState, this.queue);
     }
   }
 
@@ -47,11 +59,12 @@ export class StateMachine<T> extends Component {
 	 *  .onupdate( idleUpdate )
 	 *  .onexit((next) => {
 	 * 		console.log("Exiting idle state. Now entering " + next);
-	 * });```
+	 * });
+   * ```
 	 * @param key Identifying key of type T. Enums are preferred.
 	 */
 	add(key: T): State<T> {
-    let state = new State(key);
+    let state = new State(key, this.context);
     this.states.set(state.key, state);
     return state as State<T>;
   }
@@ -61,48 +74,38 @@ export class StateMachine<T> extends Component {
    * @param key The key of the State to start
    * @param data Extra data for the events to receive
    */
-  start(key: T, data?: any) {
-  	// Undefined check
-    if (key === undefined || key === null) return;
-
-    // If there is already a state playing fire the old state's exit event
-    if (this.isPlaying === true) {
-    	// and this state exists, and an exit function exists on this state
-      if (this.state && this.state.has(State.Event.EXIT)) {
-      	// Fire the state's exit event
-        this.state.run(State.Event.EXIT, this.context, key, this._timeInState, data);
+  start(key: T) {
+    const nextstate = this.states.get(key);
+    const current = this.queue.current;
+    if (nextstate) {
+      if (this.isPlaying && current) {
+        current.run(State.Event.EXIT, this.gameTime, this.timeInState, this.queue);
         if (this.isDebug) {
-	        console.log(`[${this.context.constructor.name} 
-	        	StateMachine] Exiting state <- ${this.state.key}`);
+          console.log(`[${this.context.constructor.name} StateMachine] Exiting state <- ${current.key}`);
         }
       }
-    }
+         
+      this.queue.last = this.queue.current || nextstate;
+      this.queue.current = nextstate;
 
-    // Fire the new state's enter event and set the new state to be the current state
-    let lastStateKey = this.state? this.state.key : undefined;
-    this._timeInState = 0;
-    this.state = this.states.get(key);
-    if (this.state) {
-    	if (this.state.has(State.Event.ENTER)) {
-    		this.state.run(State.Event.ENTER, this.context, lastStateKey? lastStateKey : undefined, data);
-    		if (this.isDebug) {
-    			console.log(`[${this.context.constructor.name} StateMachine] Entering state -> ${this.state.key}`);
-    		}
-    		
-    	}
-       
-    	if (lastStateKey !== this.state.key && this.onStateChanged) {
-    		this.onStateChanged.send(key, lastStateKey);
-    	}
-    	
-    	this.isPlaying = true;
-    }
-    
+      nextstate.run(State.Event.ENTER, this.gameTime, this._timeInState, this.queue);
+      if (this.isDebug) {
+        console.log(`[${this.context.constructor.name} StateMachine] Entering state -> ${nextstate.key}`);
+      }
 
+      this.isPlaying = true;
+      this._timeInState = 0;
+
+      // Send notification of state change
+    	if (this.queue.last.key !== this.queue.current.key || !this.isPlaying) {
+    		this.onStateChanged.send(this.queue.current, this.queue.last);
+      }
+
+    }    
   }
 
   unpause() {
-    if (this.state) {
+    if (this.queue.current) {
     	// there is a state
       this.isPlaying = true;
     } else {
@@ -121,11 +124,12 @@ export class StateMachine<T> extends Component {
    */
   stop(...params: any) {
     if (this.isPlaying) {
+      const state = this.queue.current;
       this.isPlaying = false;
-      if (this.state && this.state.has(State.Event.EXIT)) {
-        this.state.run(State.Event.EXIT, this.context, undefined, this._timeInState, params);
+      if (state) {
+        state.run(State.Event.EXIT, this.gameTime, this._timeInState, params);
         if (this.isDebug) console.log(`[${this.context.constructor.name} StateMachine] 
-        	Exiting state <- ${this.state.key}`);
+        	Exiting state <- ${state.key}`);
       }   
     }
   }
@@ -134,18 +138,27 @@ export class StateMachine<T> extends Component {
    * The key of the currently running state
    */
   get currentKey() {
-    if (this.state) {
-      return this.state.key;
-    }
+    return this.queue.current ? this.queue.current.key : undefined;
   }
     
   /**
    * Remove state(s) from the StateMachine
    * @param params Key(s) of States to Remove
    */
-  remove(...params: T[]): void {
-    for(let i = 0; i < params.length; i++) {
-    	this.states.delete(params[i]);
-    }
+  remove(key: T): void {
+    this.states.delete(key);
+  }
+
+  destroy() {
+    this.states.forEach((state) => {
+      state.destroy();
+    })
+    this.states.clear();
+    delete this.states;
+    delete this.queue;
+    this.onStateChanged.unsubscribeAll();
+    delete this.onStateChanged;
+
+    super.destroy();
   }
 }

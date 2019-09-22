@@ -95,24 +95,20 @@ export class Transform extends Component {
 		finalPos.y = y;
         finalPos.z = z;
 
-        if (!this.areVector3Same(this._finalPosition, this._finalPositionLast)) {
-            this.onChangePosition.send(this._finalPosition);
+		if (!this._finalPosition.isEqualTo(this._finalPositionLast)) {
+            this.onPositionChanged.send(this._finalPosition);
         }
-    }
-
-    private areVector3Same(pos1: Vector3Like, pos2: Vector3Like) {
-        return (pos1.x === pos2.x && pos1.y === pos2.y && pos1.z === pos2.z);
     }
 
 	constructor(x = 0, y = 0, z = 0) {
 		super(null, 0); // <- updateOrder
 		this.setPosition(x, y, z);
-		this.children.onAdded.subscribe(this, (transform) => {
+		this.children.onAdded.subscribe((transform) => {
 			transform.setParent(this);
-		});
-		this.children.onRemoved.subscribe(this, (transform) => {
+		}, this);
+		this.children.onRemoved.subscribe((transform) => {
 			transform.removeParent();
-		});
+		}, this);
 	}
 
     update(gameTime: GameTime) {
