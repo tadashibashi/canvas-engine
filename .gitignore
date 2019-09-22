@@ -1,7 +1,16 @@
+# Other Editor Files
 *.sublime-workspace
-js/
-node_modules/
-src/libraries/
-CanvasEngineFMOD/
 .vs/
+
+# Other Libs
+node_modules/
+src/libraries/fmodstudio/README.md
+src/libraries/fmodstudio/LICENSE
+src/libraries/fmodstudio/.git
+src/libraries/fmodstudio/StarterTutorial.md
+
+# Assets
 public/audio/banks/
+dist/
+CanvasEngineFMOD/
+TexturePacker/
