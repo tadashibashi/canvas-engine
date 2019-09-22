@@ -7,29 +7,44 @@ import { GameTime } from "./GameTime";
 export class Transform extends Component {
     readonly children = new ComponentManager<Transform>();
 
+	/**
+	 * Returns a new Vector3 marking this transform's relative position
+	 */
     get position(): Vector3 {
-        return this._position;
-    }
+		let pos = this._position;
+		return new Vector3(pos.x, pos.y, pos.z);
+	}
+	private _positionLast = new Vector3();
     private _position = new Vector3();
 
+	/**
+	 * Returns a new Vector3 marking this transform's final position
+	 */
     get positionFinal(): Vector3 {
-        return this._finalPosition;
+		let pos = this._finalPosition;
+        return new Vector3(pos.x, pos.y, pos.z);
     }
-    private _finalPosition = new Vector3();
+	private _finalPosition = new Vector3();
     private _finalPositionLast = new Vector3();
 	
     parent: Transform | undefined;
 
-    readonly onChangePosition = new Delegate<(position: Vector3Like) => void>();
+	/**
+	 * A delegate/event when position has changed
+	 */
+    readonly onPositionChanged = new Delegate<(position: Vector3Like) => void>();
 
 	setPosition(x: number, y: number, z?: number) {
 		let pos = this._position;
+		let posLast = this._positionLast;
+		posLast.x = pos.x;
+		posLast.y = pos.y;
+		posLast.z = pos.z;
 		pos.x = x;
         pos.y = y;
         if (z) {
             pos.z = z;
         }
-		
 		this.setFinalPosition();
 	}
 
@@ -38,6 +53,13 @@ export class Transform extends Component {
 			return this._position;
 		} else {
 			return this._finalPosition;
+		}
+	}
+	getLastPosition(relative = false) {
+		if (relative) {
+			return this._positionLast;
+		} else {
+			return this._finalPositionLast;
 		}
 	}
 
