@@ -38,7 +38,6 @@ export class Game2 extends Game {
 
         const colls = new CollisionManager();
         colls.set(go1, go2)
-            .events
             .on('enter', (obj1, obj2) => {
                 console.log('I entered!');
             })
