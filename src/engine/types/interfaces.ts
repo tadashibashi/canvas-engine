@@ -11,7 +11,7 @@ export interface IDebuggable {
 }
 
 export interface IAwakable {
-	awake(): void;
+	create(): void;
 }
 
 export interface IUpdatable {

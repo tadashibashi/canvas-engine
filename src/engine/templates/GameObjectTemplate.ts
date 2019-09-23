@@ -1,20 +1,20 @@
-import { GameObject } from "../GameObject";
+import { GameObject } from "../gameobjects/GameObject";
 import { GameTime } from "../GameTime";
 
 export class GameObjectTemplate extends GameObject {
 	// cache components here
 	
-	constructor(x: number, y: number) {
-        super('tagname', { x: x, y: y });
+	constructor() {
+        super('tagname');
 
 		// add components here
 
 	}
 
-	awake() {
-		super.awake();
+	create() {
+
 		
-		// Connection logic here
+		super.create();
 	}
 
 	update(gameTime: GameTime) {

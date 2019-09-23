@@ -11,6 +11,8 @@ import { Ball } from "./Ball";
 import { Atlas } from "../engine/graphics/Atlas";
 import { Drawf } from "../engine/graphics/functions";
 import { Brick } from "./Brick";
+import { AtlasManager } from "../engine/graphics/AtlasManager";
+import { AnimationManager } from "../engine/graphics/AnimationManager";
 
 interface Controls {
     left: Input;
@@ -72,14 +74,29 @@ export class Game1 extends Game {
         super.preload(assets);
 	}
 
-    awake() {     
-        const atlasData = this.assets.json.get('atlas');
-        const img = this.assets.images.get('atlas');
-        if (atlasData && img) {
-            this._atlas = new Atlas(img, JSON.parse(atlasData));
-            this.services.add(this._atlas);
-        }
-        super.awake();
+    create() {     
+        const atlasses = this.services.get(AtlasManager);
+        const anims = this.services.get(AnimationManager);
+        atlasses.create('masterAtlas', 'atlas', 'atlas');
+        anims.createFromAtlas({
+            key: 'guy',
+            atlas: atlasses.get('masterAtlas'),
+            baseFps: 10,
+            frameKeys: anims.makeFrameKeys('creatures/guy/', '', 1, 4)
+        });
+        anims.createFromAtlas({
+            key: 'guyShocked',
+            atlas: atlasses.get('masterAtlas'),
+            baseFps: 10,
+            frameKeys: ['creatures/guy/5']
+        });
+        anims.createFromAtlas({
+            key: 'brick',
+            atlas: atlasses.get('masterAtlas'),
+            baseFps: 10,
+            frameKeys: ['bricks/1']
+        });
+        super.create();
 	}
     fontSize = 12;
 	update(gameTime: GameTime) {

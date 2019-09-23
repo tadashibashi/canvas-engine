@@ -7,7 +7,7 @@ export class NewComponent extends Component {
 		super('tagname', 0); // Update Order
 	}
 
-	awake() {
+	create() {
 		// Game.engine.services.get()
 	}
 

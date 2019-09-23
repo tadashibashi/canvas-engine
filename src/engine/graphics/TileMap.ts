@@ -18,6 +18,9 @@ export class TileMap {
 }
 
 export class TileMapLayer extends DrawableComponent {
+
+    create() {};
+
     draw(gameTime: GameTime) {
         
     }

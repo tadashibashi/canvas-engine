@@ -6,8 +6,8 @@ export class Keyboard extends InputSource<KeyboardEvent> {
 		super(-10000);
 	}
 
-  awake() {
-		super.awake();
+  create() {
+		super.create();
 		window.addEventListener('keydown', (ev) => this.queueEvent(ev));
 		window.addEventListener('keyup', (ev) => this.queueEvent(ev));
     this.onInput.subscribe(this.processInput, this);

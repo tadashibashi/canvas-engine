@@ -68,8 +68,8 @@ export class GraphicRenderer extends DrawableComponent {
 	 * EVENT: Called by the ComponentManager. All child classes must call this via super.awake()
 	 * The event to safely associate other components within the manager.
 	 */
-	awake() {
-        super.awake();
+	create() {
+        super.create();
 
 		this._transform = this.manager.get(Transform);
 	}

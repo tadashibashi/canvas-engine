@@ -72,8 +72,8 @@ export class Game2 extends Game {
     super.preload(assets);
 	}
 
-  awake() {
-      super.awake();
+  create() {
+      super.create();
       
 		
 	}

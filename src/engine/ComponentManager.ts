@@ -102,7 +102,7 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 			this.components.unshift(component);
 			
 			if (this.activated) {// after scene/game start will auto awake newly created component
-				component.awake();
+				component.create();
 			}
 			this.onAdded.send(component);
 		}

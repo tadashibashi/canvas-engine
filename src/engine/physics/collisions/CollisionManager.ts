@@ -9,6 +9,8 @@ export class CollisionManager extends Component {
     constructor() {
         super(null, 10000); // <- update order delayed so that movement calculations come before
     }
+
+    create() {};
     
     update(gameTime: GameTime) {
         this.collisions.forEach((coll) => coll.update());

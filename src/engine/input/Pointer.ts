@@ -11,8 +11,7 @@ export class Pointer extends InputSource<PointerEvent> {
 		super(-9999);
 	}
 
-	awake() {
-		super.awake();
+	create() {
 		let canvas = Game.engine.services.get(Canvas) as Canvas;
 		this.scale = canvas.element.width / canvas.element.clientWidth / window.devicePixelRatio / canvas.scale;
 		window.addEventListener('pointermove', this.updatePointerPos);

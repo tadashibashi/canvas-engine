@@ -1,19 +1,27 @@
 import { DrawableComponent } from "./DrawableComponent";
 import { InputManager } from "./input/InputManager";
 import { ComponentManager } from "./ComponentManager";
-import { GameObject } from "./GameObject";
+import { GameObject } from "./gameobjects/GameObject";
 import { GameTime } from "./GameTime";
 
 export class Scene extends DrawableComponent {
   
-  // ==== Referenced obtained during awake() ====
-  get input(): InputManager {
-    return this._input as InputManager;
-  }
-  private _input: InputManager | undefined;
+  // ==== Reference obtained during awake() ====
+  input!: InputManager;
 
   // === Scene-Level Objects ===
   gameobjects = new ComponentManager<GameObject>();
+  persistent: GameObject[] = [];
+
+  constructor(tag: string) {
+    super(tag);
+  }
+  
+
+  create() {
+
+  }
+
   update(gameTime: GameTime) {
 
   }

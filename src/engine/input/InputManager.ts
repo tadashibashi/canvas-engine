@@ -18,8 +18,8 @@ export class InputManager extends Component {
   		.add(this.keyboard);
   }
 
-  awake() {
-  	this.sources.awake();
+  create() {
+  	this.sources.create();
   }
 
   update(gameTime: GameTime) {

@@ -30,6 +30,8 @@ export class StateMachine<T> extends Component {
   }
 
   // ============= EVENT CALLBACKS ================================
+  create() {};
+
   update(gameTime: GameTime): void {
     // Replace temp GameTime with the Game's GameTime
     if (this.gameTime !== gameTime) this.gameTime = gameTime;
