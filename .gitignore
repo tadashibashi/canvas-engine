@@ -1,6 +1,7 @@
 # Other Editor Files
 *.sublime-workspace
-.vs/
+.vs
+.vscode
 
 # Other Libs
 node_modules/
