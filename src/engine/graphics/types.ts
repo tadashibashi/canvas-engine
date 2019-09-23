@@ -1,3 +1,6 @@
+/**
+ * Interface for each frame in an exported TexturePacker json
+ */
 export interface TexturePackerFrame {
   /**
    * The original file that was packed into the Atlas
@@ -29,6 +32,9 @@ export interface TexturePackerFrame {
   pivot: {x: number, y: number};
 }
 
+/**
+ * Top-level exported TexturePacker json
+ */
 export interface TexturePackerJSON {
   frames: TexturePackerFrame[];
   meta: {
@@ -54,16 +60,22 @@ export interface TexturePackerJSON {
   }
 }
 
+/**
+ * Interface for a frame of an animation
+ */
 export interface IFrame {
   rect: {x: number, y: number, width: number, height: number };
   anchor: {x: number, y: number};
   rotated: boolean;
 }
 
+/**
+ * Interface for an animation
+ */
 export interface IAnimation {
+  key: string;
   image: HTMLImageElement;
   frames: IFrame[];
   reel: number[];
-  useReel: boolean;
-  fps: number;
+  baseFps: number;
 }
