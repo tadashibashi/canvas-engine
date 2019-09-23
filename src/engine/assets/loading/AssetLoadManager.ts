@@ -4,14 +4,16 @@ import { JSONLoader } from "./JSONLoader";
 import { ImageLoader } from "./ImageLoader";
 import { AudioLoader } from "./AudioLoader";
 import { FMODLoader } from "../../audio/fmodstudio/FMODLoader";
+import { Atlas } from "../../graphics";
 
 /**
  * Something that holds the data store for assets
  */
 export interface IAssetBank {
 	json: Map<string, string>;
-	images: Map<string, HTMLImageElement>;
-	audio: Map<string, HTMLAudioElement>;
+	image: Map<string, HTMLImageElement>;
+  audio: Map<string, HTMLAudioElement>;
+  atlas: Map<string, Atlas>;
 }
 
 export class AssetLoadManager extends Loader {
@@ -37,7 +39,7 @@ export class AssetLoadManager extends Loader {
   constructor(public baseURL: string, public assets: IAssetBank, private fmodLoader?: FMODLoader) {
 	  super();
 	  this.jsonLoader = new JSONLoader(this, assets.json, 'json/');
-	  this.imageLoader = new ImageLoader(this, assets.images, 'images/');
+	  this.imageLoader = new ImageLoader(this, assets.image, 'images/');
 	  this.audioLoader = new AudioLoader(this, assets.audio, 'audio/');
 
 	  // Attach callbacks
@@ -106,6 +108,7 @@ export class AssetLoadManager extends Loader {
    */ 
   private finishLoading = () => {
     console.log('Finished Loading all files!');
+    this.loadWrappers();
     this.onLoadFinish.send();
     this.isLoading = false;
   }
@@ -135,5 +138,9 @@ export class AssetLoadManager extends Loader {
       case 'audio': this.states.start('finished');
       break;
     }
+  }
+
+  loadWrappers = () => {
+
   }
 }

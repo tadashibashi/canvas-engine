@@ -29,25 +29,7 @@ export class Atlas {
       rotated: config.rotated
     } as IFrame;
   }
-  makeFrameKeys(baseName: string, separator: string, start: number, end: number, zeroPadding = 0): string[] {
-    const frameKeys: string[] = [];
-    for(let i = start; i <= end; i++) {
-      frameKeys.push(baseName + separator + this.zeroPadNumber(i, zeroPadding));
-    }
-    console.log(frameKeys);
-    return frameKeys;
-  }
-  private zeroPadNumber(num: number, numDigits: number): string {
-    numDigits = Math.floor(numDigits);
-    let numStr = Math.floor(num).toString();
-    let diffLength = numDigits - numStr.length;
-    if (diffLength > 0) {
-      for (let i = 0; i < diffLength; i++) {
-        numStr = '0' + numStr;
-      }
-    }
-    return numStr;
-  }
+
 
   /**
    * Make an animation that uses either frame order or a reel to determine animation
@@ -56,20 +38,29 @@ export class Atlas {
    * @param frameKeys the frames to render
    * @param reel optional reel to set a different frame order
    */
-  makeAnimation(fps: number, frameKeys: string[], reel: number[] = []): IAnimation {
-    const frames = this.getFrames(frameKeys);
-    let useReel = false;
-    if (reel.length > 0) {
-      useReel = true;
+  makeAnimation(key: string, fps: number, frameKeys: string[] | string, reel?: number[]): IAnimation {
+    let frames: IFrame[];
+    if (Array.isArray(frameKeys)) {
+      frames = this.getFrames(frameKeys);
+    } else {
+      frames = [this.getFrame(frameKeys)];
+    }
+    
+    if (!reel) {
+      reel = [];
+      for (let i = 0; i < frameKeys.length; i++) {
+        reel.push(i);
+      }
     }
     return {
+      key: key,
       image: this.image,
       frames: frames,
       reel: reel,
-      useReel: useReel,
-      fps: fps
+      baseFps: fps
     };
   }
+
   getFrame(key: string) {
     const frame = this.frames.get(key);
     if (frame) {
@@ -78,6 +69,7 @@ export class Atlas {
       throw new Error('Frame data of key: ' + key + ', does not exist on this TextureAtlas!');
     }
   }
+
   getFrames(keys: string[]) {
     const frames: IFrame[] = [];
     keys.forEach((key) => {
