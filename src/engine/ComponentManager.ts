@@ -9,6 +9,7 @@ import { ArrayMap } from "./utility/ArrayMap";
  * @type T Constrains the type of Component to be managed. Default: Component
  */
 export class ComponentManager<T extends Component = Component> extends DrawableComponent {
+	destroyed = false;
   private components: T[] = [];
 	private drawList: DrawableComponent[] = [];
   private activated = false;
@@ -188,17 +189,19 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 
 	// ============== EVENT HANDLERS/CALLBACKS =====================
 
-	awake() {
-		this.forEach(c => c.awake());
+	create() {
+		this.forEach(c => c.create());
 		this.sortUpdateListOrder();
-        this.sortDrawListOrder();
-        this.activated = true;
+		this.sortDrawListOrder();
+		this.activated = true;
 	}
 
 	/**
 	 * Updates every component in this ComponentManager
 	 */
 	update(gameTime: GameTime) {
+		if (this.destroyed) return;
+
 		this.forEach((c) => {
 			if (c.isEnabled) {
 				c.update(gameTime);
@@ -210,6 +213,8 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 	 * Calls every DrawableComponent's draw method in this ComponentManager
 	 */
 	draw(gameTime: GameTime) {
+		if (this.destroyed) return;
+
 		this.forEachDrawable((c) => {
 			if (c.isEnabled) {
 				c.draw(gameTime);
@@ -221,18 +226,19 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 	 * TODO: TEST THIS FUNCTION! Does each component get destroyed?
 	 */
 	destroy(destroyComponentsToo = true) {
+		this.destroyed = true;
+		this.onAdded.unsubscribeAll();
+		
+		this.onRemoved.unsubscribeAll();
 		if (destroyComponentsToo) {
 			this.components.forEach((component) => {
 				component.destroy();
 			});
 		}
-
-		this.onAdded.unsubscribeAll();
 		delete this.onAdded;
-		this.onRemoved.unsubscribeAll();
-		this.components = [];
-		this.drawList = [];
-
+		delete this.onRemoved;
+		delete this.components;
+		delete this.drawList;
 		super.destroy();
 	}
 
