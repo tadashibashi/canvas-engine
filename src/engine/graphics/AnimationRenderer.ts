@@ -3,12 +3,14 @@ import { GameTime } from "../GameTime";
 import { Mathf } from "../math/functions";
 import { Drawf } from "./functions";
 import { IAnimation } from "./types";
+import { Delegate } from "../utility/Delegate";
 
 export class AnimationRenderer extends GraphicRenderer {
   anim: IAnimation | null = null;
   speed = 1;
   index = 0;
   pixelRendering = true;
+  onAnimationEnd = new Delegate<(animKey: string) => void>();
   constructor(anim?: IAnimation) {
     super();
     if (anim) {
@@ -18,19 +20,21 @@ export class AnimationRenderer extends GraphicRenderer {
   }
 
   update(gameTime: GameTime) {
-    const anim = this.anim;
-    if (anim && anim.frames.length > 1) {
-      this.index = Mathf.wrap(this.index + this.speed, 0, anim.frames.length);
-    } else {
-      this.index = 0;
-    }
+
   }
 
   draw() {
-    if (this.anim) {
-      const frame = this.anim.frames[Math.floor(this.index)];
+    const anim = this.anim;
+    if (anim) {
+      if (anim.frames.length > 1) {
+        this.index = Mathf.wrap(this.index + this.speed, 0, anim.reel.length);
+      } else {
+        this.index = 0;
+      }
+
+      const frame = anim.frames[anim.reel[Math.floor(this.index)]];
       this.start();
-      Drawf.frame(this.canvas.pixelCtx, frame, this.anim.image, -this.anchor.x, -this.anchor.y);
+      Drawf.frame(this.canvas.pixelCtx, frame, anim.image, -this.anchor.x, -this.anchor.y);
       this.end();
     }
   }
