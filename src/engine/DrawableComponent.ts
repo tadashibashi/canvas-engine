@@ -2,21 +2,19 @@ import { Component } from "./Component";
 import { Delegate } from "./utility/Delegate";
 import { Canvas } from "./Canvas";
 import { GameTime } from "./GameTime";
+import { Game } from "./Game";
 
 export abstract class DrawableComponent extends Component {
 	/**
 	 * An event handle that others can subscribe to when the update order changes
 	 */
-	readonly onDrawOrderChanged = new Delegate<(component: Component, value: number) => void>();
+	onDrawOrderChanged = new Delegate<(component: Component, value: number) => void>();
 	
 	/**
-	 * Reference to the canvas wrapper
+	 * Reference to the canvas wrapper. Must be referenced after super.awake().
 	 * Use this.canvas.context to draw
 	 */
-	get canvas(): Canvas {
-		return this._canvas as Canvas;
-	}
-	private _canvas: Canvas | undefined;
+	canvas!: Canvas;
 
 	/**
 	 * Depth within drawable components in a ComponentManager.
@@ -30,24 +28,23 @@ export abstract class DrawableComponent extends Component {
 		}
 		
 	}
+	/** Internal drawOrder variable. Set this to bypass the onDrawOrderChanged callback. */
 	private _drawOrder: number;
 
 	constructor(tag?: string | null, updateOrder = 0, drawOrder = 0) {
 		super(tag, updateOrder);
 		this._drawOrder = drawOrder;
+		this.canvas = Game.engine.canvas;
+		console.log(this.canvas);
 	}
 	
-	awake() {
-		super.awake();
-		this._canvas = this.services.get(Canvas);
-	}
+	create(): void {};
 
 	abstract draw(gameTime: GameTime): void;
 
 
 	destroy() {
 		this.onDrawOrderChanged.unsubscribeAll();
-		this._canvas = undefined;
 		super.destroy();
 	}
 }

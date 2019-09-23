@@ -1,4 +1,4 @@
-import { GameObject } from "../engine/GameObject";
+import { GameObject } from "../engine/gameobjects/GameObject";
 import { ICollidable } from "../engine/physics/collisions/types";
 import { Circle } from "../engine/math/shapes/Circle";
 import { GraphicRenderer } from "../engine/graphics/GraphicRenderer";
@@ -10,28 +10,24 @@ import { Mathf } from "../engine/math/functions";
 import { Timer } from "../engine/timers/Timer";
 import { Game2 } from "./Game2";
 import { Collider } from "../engine/physics/collisions/Collider";
+import { GameActor } from "../engine/gameobjects/GameActor";
 
 
-export class GrowingCircle extends GameObject implements ICollidable {
-    // cache components here
-    readonly collider: Collider<Circle>;
+export class GrowingCircle extends GameActor<Circle> {
     constructor(
         x: number, y: number,
         private radius: number,
         public r: number, public g: number, public b: number) {
-        super('growCirc', { x: x, y: y });
-
-        this.components.add(new GraphicRenderer());
-        this.collider = new Collider(new Circle(x, y, radius));
+        super(new Circle(x, y, radius), 'growCirc');
     }
 
-    awake() {
-        super.awake();
+    create() {
+        super.create();
         this.transform.onPositionChanged.subscribe((pos) => {
             this.collider.setPosition(pos.x, pos.y, pos.z);
         });
         const tweener = this.services.get(Tweener);
-        const gr = this.components.get(GraphicRenderer);
+        const gr = this.image;
         const time = 4;
         tweener.tweenTo(gr.scale, ['x'], [60 + Game2.colorRange.r], time, Mathf.choose(TweenFunctions.easeInCubic))
             .setRepeat(0);

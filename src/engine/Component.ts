@@ -12,8 +12,7 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	 * You can make conditionals for testing purposes with this variable.
 	 */
 	isDebug = false;
-  isEnabled = true;
-    
+  isEnabled = true;  
   readonly tag: string;
 
 	/**
@@ -23,10 +22,9 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	manager!: ComponentManager<any>;
 
 	/**
-	 * Cached top-level services container. All calls to it must come during or after awake().
-	 * Make sure to call super.awake() before making references to it as well.
+	 * Container containing global services. Anything put into it can be retrieved via get. Best practice to only let the Game put items into it.
 	 */
-	protected services!: TypeContainer;
+	protected services: TypeContainer;
 
 	/**
 	 * An event handle that others can subscribe to when the update order changes
@@ -34,15 +32,15 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	onUpdateOrderChanged = new Delegate<((component: Component, value: number) => void)>();
 	onDestroy = new Delegate<(component: Component) => void>();
 
-	private _updateOrder: number;
+	
 	get updateOrder() {return this._updateOrder;}
 	set updateOrder(val: number) {
 		if (this._updateOrder !== val) {
+			this._updateOrder = val;
 			this.onUpdateOrderChanged.send(this, val);
-		}
-		this._updateOrder = val;
-		
+		}	
 	}
+	private _updateOrder: number;
  	
 	/**
 	 * Initialize variables originating in this Component here
@@ -55,17 +53,14 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 		} else {
 			this.tag = '';
 		}  
+		this.services = Game.engine.services;
 	}
 
 	/**
-	 * Components can safely make associations with other components here. 
-	 * IMPORTANT! Make sure to call super.awake() to reference parent cached references
-	 * Also make sure to call all object-owned ComponentManager's awake() here,
-	 * so they can connect their own references.
+	 * Components can safely make associations with other components here. This is when the manager is set and becomes available.
+	 * IMPORTANT! Make sure to call all object-owned ComponentManager's awake() here, so they can connect their own references.
 	 */
-	awake(): void {
-		this.services = Game.engine.services;
-	}
+	create(): void {};
 
 	/**
 	 * Occurs once during every game frame
