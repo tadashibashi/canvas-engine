@@ -45,7 +45,7 @@ export class State<T> {
    */
   constructor(key: T, context: any) {
     this.key = key;
-    this.context = context;
+    this.context = context ? context : null;
   }
 
   /**

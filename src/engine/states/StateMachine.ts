@@ -2,7 +2,6 @@ import { Component } from "../Component";
 import { State } from "./State";
 import { Delegate } from "../utility/Delegate";
 import { GameTime } from "../GameTime";
-import { DelegateGroup } from "../utility/DelegateGroup";
 
 export class StateQueue<T> {
   current: State<T> | null = null;
@@ -17,6 +16,7 @@ export class StateMachine<T> extends Component {
   private isPlaying: boolean = false;
   private _timeInState: number = 0;
   private gameTime = new GameTime();
+  private context: any;
 	get timeInState() {return this._timeInState;}
 
 	/**
@@ -24,8 +24,9 @@ export class StateMachine<T> extends Component {
 	 */
 	onStateChanged = new Delegate<(newState: T, lastState?: T) => void>();
 
-	constructor(private context: any) {
-		super();
+	constructor(context?: any) {
+    super();
+    this.context = context ? context : null;
     this.states = new Map<T, State<T>>();
   }
 
