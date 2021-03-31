@@ -1,5 +1,5 @@
 import { FMODPreloadFileData, FMODStudioConfig } from './types';
-import { CHECK_RESULT, parseID, globals } from './functions';
+import { CHECK_RESULT, parseID, globals} from './functions';
 import { Loader } from '../../assets/loading/Loader';
 import { DelegateGroup } from '../../utility/DelegateGroup';
 import { Delegate } from '../../utility/Delegate';
@@ -84,7 +84,7 @@ export class FMODLoader extends Loader {
 	 * Processes each FMODPreloadFileData config via IFMOD.FS_createPreloadedFile
 	 */
 	private evPreload = (configs: FMODPreloadFileData[]) => {
-		console.log('FMOD is Mounting Preload files...');
+		if (this.isDebug) console.log('FMOD is Mounting Preload files...');
 
 		configs.forEach((data) => {
 			let url = data.url? data.url : '';
@@ -106,7 +106,7 @@ export class FMODLoader extends Loader {
 		if (!this.fmod.Studio_System_Create) {
 			throw new Error('Warning! FMOD Object has not been initialized!');
 		}
-		console.log('FMOD Runtime has been initialized. Loading banks...');
+		if (this.isDebug) console.log('FMOD Runtime has been initialized. Loading banks...');
 		
 		let outval: any = {};
 		this.fmod.Studio_System_Create(outval);
@@ -144,7 +144,7 @@ export class FMODLoader extends Loader {
 	 */
 	private evTestSound = () => {
 		if (this.soundTest) {
-			console.log('FMOD is testing sound');
+			if (this.isDebug) console.log('FMOD is testing sound');
 			let outval: any = {};
 			let key = this.config.soundTestEvent;
 			if (key.includes('event:/')) {
@@ -171,7 +171,7 @@ export class FMODLoader extends Loader {
 	}
 
 	private evFinish = () => {
-		console.log('FMOD has finished loading!');
+		if (this.isDebug) console.log('FMOD has finished loading!');
 		this.events.destroy();
 
 		this.setListenerVisibilityChange();
@@ -229,7 +229,7 @@ export class FMODLoader extends Loader {
 		let audioContextResume = () => {
 			CHECK_RESULT(core.mixerSuspend(), 'suspending core mixer');
 			CHECK_RESULT(core.mixerResume(), 'resuming core mixer');
-			console.log('Resuming mixer.');
+			if (this.isDebug) console.log('Resuming mixer.');
 			window.removeEventListener(audioResumeEvent, audioContextResume);
 		}
 		window.addEventListener(audioResumeEvent, audioContextResume);

@@ -13,7 +13,8 @@ export class TypeContainer {
 		if (index !== -1) {
 			return this.arr[index] as T;
 		} else {
-			throw new Error('ServiceContainer does not contain an item of type: '+ type.name + ', which was attempted to be retrieved by ServiceContainer.get()');
+			console.log('Error! ServiceContainer does not contain an item of type: '+ type.constructor.name + ', which was attempted to be retrieved by ServiceContainer.get()');
+			return {} as T;
 		}
 	}
 

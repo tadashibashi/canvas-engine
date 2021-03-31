@@ -1,20 +1,19 @@
 import { StateMachine } from "../engine/states/StateMachine";
-import { InputManager } from "../engine/input/InputManager";
 import { Player } from "./Player";
 import { Circle } from "../engine/math/shapes/Circle";
 import { Mathf } from "../engine/math/functions";
 import { Input, PointerCodes } from "../engine/input/types";
-import { Tweener } from "../engine/tweens/Tweener";
 import { Tween } from "../engine/tweens/Tween";
 import { TweenFunctions } from "../engine/tweens/functions";
 import { FMODEngine } from "../engine/audio/fmodstudio/FMODEngine";
-import { CollisionManager } from "../engine/physics/collisions/CollisionManager";
 import { Brick } from "./Brick";
 import { GameActor } from "../engine/gameobjects/GameActor";
 import { IAnimation } from "../engine/graphics/types";
-import { AnimationManager } from "../engine/graphics/AnimationManager";
+import { GameTime } from "../engine/GameTime";
+import { AnimationRenderer } from "../engine/graphics/AnimationRenderer";
 
 export class Ball extends GameActor<Circle> {
+  static instance: Ball;
   states: StateMachine<'Play' | 'Out' | 'Restore' | 'Start'>;
   vspeed = 0;
   hspeed = 0;
@@ -23,23 +22,25 @@ export class Ball extends GameActor<Circle> {
   tweenBox = new Map<'vBounce' | 'hBounce', Tween>();
   guyAnim!: IAnimation;
   hitAnim!: IAnimation;
-  constructor(x: number, y: number, radius: number) {
-    super(new Circle(x,y,radius), 'ball');
-
+  persistent = true;
+  constructor(x: number, y: number) {
+    super(new Circle(x,y,8), 'ball');
     this.components
     .add(this.states = new StateMachine(this));
   }
 
+  update(gameTime: GameTime) {
+    super.update(gameTime);
+  }
+
   create() {
-    this.collider.syncToTransform(this.transform);
-    const tweener = this.services.get(Tweener);
-    const input = this.services.get(InputManager);
+    const tweener = this.scene.tweener;
+    const input = this.scene.input;
     const player = this.manager.getByTag('player')[0] as Player;
-    const colls = this.services.get(CollisionManager);
+    const colls = this.scene.collisions;
     let pos = this.transform.getPosition(true);
-    const fmod = this.services.get(FMODEngine);
     // set animation
-    const anims = this.services.get(AnimationManager);
+    const anims = this.scene.anims;
     this.guyAnim = anims.get('guy');
     this.hitAnim = anims.get('guyShocked');
     this.image.anim = this.guyAnim;
@@ -54,31 +55,17 @@ export class Ball extends GameActor<Circle> {
     this.tweenBox.set('vBounce', tweener.make(this.image.scale, ['y', 'x'], [.5, 1.5], .1, TweenFunctions.easeOutQuad)
     .setYoyo(true));
 
-    // Collisions
-    colls.set(player, this)
-    .on('enter', (p, b) => {
-      if (b.states.currentKey === 'Play' && b.states.timeInState > .5) {
-        b.vspeed *= -1;
-        b.hspeed = (b.collider.x - p.collider.x)*6;
-        fmod.playOneShot('event:/Bounce')
-        .setParameter('Material', Mathf.choose(0, 1, 2));
-      }
-    }, this);
-
-    let bricks = this.manager.getByTag('brick') as Brick[];
-    
-    colls.set(this, bricks)
-    .on('enter', (me, brick) => {
-      const pos = me.transform.getLastPosition(false);
-      const brickRect = brick.collider.shape;
-      if (pos.x < brickRect.left || pos.x > brickRect.right) {
-        this.bounce(true);
-      }
-      if (pos.y < brickRect.top || pos.y > brickRect.bottom) {
-        this.bounce(false);
-      }
-      brick.destroy();
-    }, this);
+    // // Collisions
+    // colls.set(player, this)
+    // .on('enter', (p, b) => {
+    //   if (b.states.currentKey === 'Play' && b.states.timeInState > .5) {
+    //     b.vspeed *= -1;
+    //     b.hspeed = (b.collider.x - p.collider.x)*6;
+    //     fmod.playOneShot('event:/Bounce')
+    //     .setParameter('Material', Mathf.choose(0, 1, 2));
+    //   }
+    // }, this);
+  
 
     // States
     // === START ===
@@ -128,7 +115,8 @@ export class Ball extends GameActor<Circle> {
       }
 
       if (pos.y >= this.canvas.virtualHeight - this.collider.width/2) {
-        this.states.start('Out');
+        //this.states.start('Out');
+        this.bounce(false);
       }
      
       // Move Ball
@@ -138,7 +126,7 @@ export class Ball extends GameActor<Circle> {
       pos.x = Mathf.clamp(pos.x, this.collider.width/2, this.canvas.virtualWidth - this.collider.width/2);
       pos.y = Mathf.clamp(pos.y, this.collider.width/2, this.canvas.virtualHeight - this.collider.width/2);
       this.setFacing();
-    });
+    }, this);
 
     this.states.start('Start');
     
@@ -150,9 +138,8 @@ export class Ball extends GameActor<Circle> {
   }
 
   bounce(horizontal: boolean) {
-    const tweener = this.services.get(Tweener);
+    const tweener = this.scene.tweener;
     const fmod = this.services.get(FMODEngine);
-
     if (horizontal) {
       this.hspeed *= -1;
       let t = this.tweenBox.get('hBounce');
@@ -166,8 +153,15 @@ export class Ball extends GameActor<Circle> {
         tweener.fire(t, true);
       }
     }
-    fmod.playOneShot('event:/Bounce')
-    .setParameter('Material', Mathf.choose(0, 1, 2));
+
+    const inst = fmod.playOneShot('event:/Bounce', 
+      {name: 'Material', value: Mathf.choose(0, 1,2)},
+      {name: 'PositionX', value: this.transform.getPosition().x/this.canvas.virtualWidth}
+    );
+    this.scene.tweener.tweenTo({val: 0}, 'val', 2, .1, TweenFunctions.linear)
+    .onStep((time, val, rep) => {
+      inst.setPitch(val);
+    });
   }
 
   destroy() {

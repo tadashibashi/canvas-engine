@@ -4,7 +4,6 @@ import { JSONLoader } from "./JSONLoader";
 import { ImageLoader } from "./ImageLoader";
 import { AudioLoader } from "./AudioLoader";
 import { FMODLoader } from "../../audio/fmodstudio/FMODLoader";
-import { Atlas } from "../../graphics";
 
 /**
  * Something that holds the data store for assets
@@ -13,7 +12,6 @@ export interface IAssetBank {
 	json: Map<string, string>;
 	image: Map<string, HTMLImageElement>;
   audio: Map<string, HTMLAudioElement>;
-  atlas: Map<string, Atlas>;
 }
 
 export class AssetLoadManager extends Loader {
@@ -107,7 +105,7 @@ export class AssetLoadManager extends Loader {
    * Fires when assets are finished loading
    */ 
   private finishLoading = () => {
-    console.log('Finished Loading all files!');
+    if (this.isDebug) console.log('Finished Loading all files!');
     this.loadWrappers();
     this.onLoadFinish.send();
     this.isLoading = false;

@@ -8,23 +8,24 @@ import { Canvas } from "./Canvas";
 import { InputManager } from "./input/InputManager";
 import { FMODEngine } from "./audio/fmodstudio/FMODEngine";
 import { FMODLoader } from "./audio/fmodstudio/FMODLoader";
-import { Tweener } from "./tweens/Tweener";
 import { AnimationManager } from "./graphics/AnimationManager";
 import { AtlasManager } from "./graphics/AtlasManager";
+import { AssetLoadManager } from "./assets/loading/AssetLoadManager";
+import { SceneManager } from "./scenes/SceneManager";
 
 export class Game implements IUpdatable, IDrawable {
-
+	loaded = false;
 	static engine: Game;
-
 	protected components: ComponentManager;
 	private readonly gameTime: GameTime;
 	public readonly config: GameConfig;
 	public readonly services: TypeContainer;
 	public readonly canvas: Canvas;
 	protected assets: AssetBank;
-	protected input: InputManager;
 	protected fmod!: FMODEngine;
-	protected tweener: Tweener;
+	protected scenes: SceneManager;
+	protected load: AssetLoadManager;
+	protected input: InputManager;
 
 	constructor(config: GameConfig) {
 		///////////////////////////////////////////////////////////
@@ -36,9 +37,11 @@ export class Game implements IUpdatable, IDrawable {
 		this.canvas = new Canvas('#' + config.canvasID, config.width, config.height);
 		///////////////////////////////////////////////////////////
 	
-			
-		this.components = new ComponentManager();
-		this.input = new InputManager();
+
+		this.components = new ComponentManager()
+		.add(this.scenes = new SceneManager())
+		.add(this.input = new InputManager(config.gameControllers? config.gameControllers : 0));
+		
 
 		// Load FMOD if there is an FMODConfig in the GameConfig
 		let fmodLoader: FMODLoader | undefined;
@@ -52,49 +55,47 @@ export class Game implements IUpdatable, IDrawable {
 			fmodLoader.load();
 		}
 
-
-
-		this.tweener = new Tweener();
 		this.gameTime = new GameTime();	
 		this.config = config;
-		this.assets = new AssetBank('public/', fmodLoader);
-		const anims = new AnimationManager();
-		const atlasses = new AtlasManager(this.assets);
+		this.assets = new AssetBank();
+		this.load = new AssetLoadManager('public/', this.assets, fmodLoader);
 		// AssetBank also loads assets. Pass FMODLoader to wait for FMODLoader to finish, otherwise if FMODLoader is undefined, proceeds without waiting for it.
 		
-
 		// Place into services for access
 		this.services
-		.add(anims)
-		.add(atlasses)
+		.add(new AnimationManager())
+		.add(new AtlasManager(this.assets))
 		.add(this.canvas)
-		.add(this.input)
 		.add(this.assets)
-		.add(this.tweener);
+		.add(this.scenes)
+		.add(this.input);
 
 		// Place components into ComponentManager
-		this.components
-		.add(this.input)
-		.add(this.tweener);
+		// SceneManager
 
 	}
 
 
 	// ============ INITIALIZATION ========================	
-	init() {
-		this.initialization(this.input);
+	start() {
+		this.load.onLoadFinish.subscribe(() => {this.create(), this.loaded = true});
+		this.preload();
+		this.load.load();
 	}
 
 	/**
-	 * Set inputs here
+	 * Overwrite for your own preloading of assets. Optional per scene
 	 */
-	protected initialization(input: InputManager) {
-		this.preload(this.assets);
+	preload() {
+		
+		
 	}
 
-	protected preload(assets: AssetBank) {
-		assets.load.onLoadFinish.subscribe(this.create, this);
-		assets.load.load();
+	/**
+	 * Overwrite for game end to do any necessary unloading. NOT IMPLEMENTED!
+	 */
+	unload() {
+
 	}
 
 	// ============ EVENT HANDLERS ========================
@@ -115,7 +116,7 @@ export class Game implements IUpdatable, IDrawable {
 		this.components.update(gameTime);	
 	}
 
-	draw(gameTime: GameTime) {
+	draw(gameTime: GameTime) {	
 		this.components.draw(gameTime);
 	}
 }

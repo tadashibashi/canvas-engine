@@ -1,5 +1,4 @@
 import { Rectangle } from "../engine/math/shapes/Rectangle";
-import { Atlas } from "../engine/graphics/Atlas";
 import { GameTime } from "../engine/GameTime";
 import { GameActor } from "../engine/gameobjects/GameActor";
 import { AnimationManager } from "../engine/graphics/AnimationManager";
@@ -11,7 +10,7 @@ export class Brick extends GameActor<Rectangle> {
   }
 
   create() {
-    const anims = this.services.get(AnimationManager);
+    const anims = this.scene.anims;
     this.image.anim = anims.get('brick');
 
     super.create();

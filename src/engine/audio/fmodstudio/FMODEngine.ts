@@ -103,7 +103,7 @@ export class FMODEngine extends Component {
 	 * Helper that retrieves an event, then immediately plays and releases it: fire-and-forget.
 	 * 
 	 */
-	playOneShot(event: FMODKey): EventInstance {
+	playOneShot(event: FMODKey, ...params: {name: string, value: number}[]) {
 		let ev = this.getEvent(event);
 		let outval: any = {};
 		CHECK_RESULT( ev.isOneshot(outval), 'getting isOneshot from event description' );
@@ -113,7 +113,10 @@ export class FMODEngine extends Component {
 			let inst = outval.val as FMOD.EventInstance;
 			CHECK_RESULT( inst.start(), 'starting oneshot event instance');
 			CHECK_RESULT( inst.release(), 'releasing oneshot event instance' );
-			return new EventInstance(inst);
+			params.forEach((param) => {
+				inst.setParameterByName(param.name, param.value, false);
+			});
+			return inst;
 		} else {
 			alert('Event is not a oneshot!');
 			throw new Error('FMOD Event Is not a OneShot!');

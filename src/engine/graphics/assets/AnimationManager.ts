@@ -1,5 +1,5 @@
-import { IAnimation } from "./types";
 import { Atlas } from "./Atlas";
+import { IAnimation } from "./interfaces";
 
 export interface AnimationFromAtlasConfig {
   key: string;
@@ -36,6 +36,7 @@ export class AnimationManager {
     for(let i = start; i <= end; i++) {
       frameKeys.push(baseName + separator + this.zeroPadNumber(i, zeroPadDigits));
     }
+    console.log(frameKeys);
     return frameKeys;
   }
   private zeroPadNumber(num: number, numDigits: number): string {

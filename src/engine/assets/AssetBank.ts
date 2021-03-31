@@ -7,13 +7,10 @@ import { FMODLoader } from '../audio/fmodstudio/FMODLoader';
 export class AssetBank {
 
 	// Separate this later
-	readonly load: AssetLoadManager;
 	readonly json = new Map<string, string>();
 	readonly audio = new Map<string, HTMLAudioElement>();
 	readonly image = new Map<string, HTMLImageElement>();
-	constructor(assetBaseURL: string, fmodLoader?: FMODLoader) {
-		this.load = new AssetLoadManager(assetBaseURL, this, fmodLoader);
-	}
+	constructor() {}
 
 	/**
 	 * Helper method for retrieving and parsing JSON.

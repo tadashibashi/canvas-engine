@@ -160,14 +160,11 @@ export namespace Mathf {
 		let quadrant: 0 | 1 | 2 | 3 = 0;
 		if (x > 0 && y >= 0) {
 			quadrant = 0;
-		}
-		if (x <= 0 && y > 0) {
+		} else if (x <= 0 && y > 0) {
 			quadrant = 1;
-		}
-		if (x < 0 && y <= 0) {
+		} else if (x < 0 && y <= 0) {
 			quadrant = 2;
-		}
-		if (x >= 0 && y < 0) {
+		} else if (x >= 0 && y < 0) {
 			quadrant = 3;
 		}
 		return quadrant;

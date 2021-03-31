@@ -9,6 +9,19 @@ export class Circle extends Shape implements CircLike {
         this.setAnchorExt(.5,.5);
     }
 
+    get left() {
+        return this.x - this.anchor.x - this.radius;
+    }
+    get right() {
+        return this.x - this.anchor.x + this.radius;
+    }
+    get top() {
+        return this.y - this.anchor.y - this.radius;
+    }
+    get bottom() {
+        return this.y - this.anchor.y + this.radius;
+    }
+
         /**
      * Sets the anchor by percentage of width and height, and then optional additional pixels
      * @param x 

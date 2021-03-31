@@ -1,7 +1,6 @@
 import { CHECK_RESULT } from "./functions";
 import { IDestroyable } from "../../types/interfaces";
 import { Delegate } from "../../utility/Delegate";
-import { DelegateGroup } from "../../utility/DelegateGroup";
 
 
 export class EventInstance implements IDestroyable {
@@ -144,11 +143,6 @@ export class EventInstance implements IDestroyable {
 		this.on.all.send(this, parameters);
 
 		return FMOD.RESULT.OK;
-	}
-	private getDescription(): FMOD.EventDescription {
-		let outval: any = {};
-		CHECK_RESULT( this.instance.getDescription(outval), 'getting event description from event instance');
-		return outval.val as FMOD.EventDescription;
 	}
 
 	getRaw(): FMOD.EventInstance {
@@ -327,9 +321,11 @@ export class EventInstance implements IDestroyable {
 	/**
 	 * Stops and releases the event instance
 	 */
-	destroy(): void {
+	destroy(stop = false): void {
 		CHECK_RESULT( this.instance.release(), 'releasing event instance');
-		this.stop();
+		if (stop) {
+			this.stop();
+		}
 		delete this.instance;
 	}
 }

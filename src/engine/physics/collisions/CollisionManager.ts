@@ -34,6 +34,13 @@ export class CollisionManager extends Component {
         }
     }
 
+    remove<O1 extends ICollidable, O2 extends ICollidable>(obj1: O1 | O1[], obj2: O2 | O2[]) {
+        let coll = this.get(obj1, obj2);
+        if (coll) {
+            this.collisions.remove(coll);
+        }
+    }
+
     private get<O1 extends ICollidable, O2 extends ICollidable>(obj1: O1 | O1[], obj2: O2 | O2[]): Collision<O1, O2> | null {
         let colls = this.collisions.getAll();
         colls.forEach((coll) => {

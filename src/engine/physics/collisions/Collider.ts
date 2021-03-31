@@ -80,6 +80,19 @@ export class Collider<T extends Shape> {
     this.shape.z = val;
   }
 
+  get left(): number {
+    return this.shape.left;
+  }
+  get right(): number {
+    return this.shape.right;
+  }
+  get top(): number {
+    return this.shape.top;
+  }
+  get bottom(): number {
+    return this.shape.bottom;
+  }
+
   /**
    * Manually sets the position of the collider. 
    * Will conflict if synced to a Transform. You should remove sync first if so.

@@ -8,4 +8,9 @@ export interface GameConfig {
 	readonly audio?: {
 		fmodConfig?: FMODStudioConfig;
 	}
+	readonly gameControllers?: number;
+}
+
+export interface IManager {
+	reset(): void;
 }

@@ -16,9 +16,7 @@ export class AudioLoader extends AssetLoader<HTMLAudioElement> {
   	// Create a new HTMLAudioElement
     const audio = document.createElement('audio') as HTMLAudioElement;
 
-    console.log('starting to load ' + filepath);
     // Set the function to call back oncanplay
-
     const canPlayHandler = () => {
     	this.onFileLoaded.send(audio, key, filepath);
     };

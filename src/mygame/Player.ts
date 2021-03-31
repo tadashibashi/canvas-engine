@@ -1,14 +1,8 @@
-import { GameObject } from "../engine/gameobjects/GameObject";
-import { ICollidable } from "../engine/physics/collisions/types";
 import { Rectangle } from "../engine/math/shapes/Rectangle";
-import { AssetBank } from "../engine/assets/AssetBank";
 import { GameTime } from "../engine/GameTime";
 import { InputManager } from "../engine/input/InputManager";
 import { Mathf } from "../engine/math/functions";
-import { Collider } from "../engine/physics/collisions/Collider";
 import { Ball } from "./Ball";
-import { AnimationRenderer } from "../engine/graphics/AnimationRenderer";
-import { Atlas } from "../engine/graphics/Atlas";
 import { GameActor } from "../engine/gameobjects/GameActor";
 import { AnimationManager } from "../engine/graphics/AnimationManager";
 
@@ -22,12 +16,10 @@ export class Player extends GameActor<Rectangle> {
 
 	constructor(
 		x: number, y: number, 
-		private color: string, 
 		private width: number, 
 		private height: number
 		) {
-        super(new Rectangle(x, y, width, height), 'player');
-
+        super(new Rectangle(x, y, width, height), 'brick');
 		this.collider.setAnchorExt(.5, 1); 
 	}
 
@@ -48,8 +40,7 @@ export class Player extends GameActor<Rectangle> {
 
 	update(gameTime: GameTime) {
 		const pos = this.transform.getPosition(true);
-		const input = this.services.get(InputManager);
-		
+		const input = this.scene.input;
         this.transform.setPosition(Mathf.clamp(input.pointer.position.x, this.width * .5, this.canvas.virtualWidth - this.width * .5), pos.y);
         
         //this.balls.forEach((ball) => {

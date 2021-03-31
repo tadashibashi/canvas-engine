@@ -10,6 +10,15 @@ export abstract class Shape implements Vector3Like, IAnchor {
         this.setPosition(x, y, z);
     }
 
+    /** Returns the x-position left-most part of the shape */
+    abstract get left(): number;
+    /** Returns the x-position right-most part of the shape */
+    abstract get right(): number;
+    /** Returns the y-position top-most part of the shape */
+    abstract get top(): number;
+    /** Returns the y-position bottom-most part of the shape */
+    abstract get bottom(): number;
+
     setAnchor(x: number, y: number, z?: number) {
         const a = this.anchor;
         a.x = x;

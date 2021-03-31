@@ -35,7 +35,6 @@ export abstract class DrawableComponent extends Component {
 		super(tag, updateOrder);
 		this._drawOrder = drawOrder;
 		this.canvas = Game.engine.canvas;
-		console.log(this.canvas);
 	}
 	
 	create(): void {};

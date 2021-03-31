@@ -1,6 +1,6 @@
 import { Atlas } from "./Atlas";
-import { TexturePackerJSON } from "./types";
-import { AssetBank } from "../assets/AssetBank";
+import { AssetBank } from "../../assets/AssetBank";
+import { TexturePackerJSON } from "./interfaces";
 
 export class AtlasManager {
   private atlasses = new Map<string, Atlas>();

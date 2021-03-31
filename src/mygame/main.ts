@@ -31,12 +31,12 @@ export function init() {
 	};
 
 	new Game1({
-		canvasID: 'guiRender',
+		canvasID: 'gui',
 		width: 320,
 		height: 180,
 		pixelated: true,
 		audio: {
 			fmodConfig: fmodConfig,
 		}
-	}).init();
+	}).start();
 }

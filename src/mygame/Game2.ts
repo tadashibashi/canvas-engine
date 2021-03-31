@@ -5,18 +5,10 @@ import { GameConfig } from "../engine/types";
 import { Player } from "./Player";
 import { CollisionManager } from "../engine/physics/collisions/CollisionManager";
 import { InputManager } from "../engine/input/InputManager";
-import { AssetBank } from "../engine/assets/AssetBank";
 import { GameTime } from "../engine/GameTime";
 import { GrowingCircle } from "./GrowingCircle";
-import { Drawf } from "../engine/graphics/functions";
 import { Mathf } from "../engine/math/functions";
 
-interface Controls {
-    left: Input;
-    right: Input;
-    up: Input;
-    down: Input
-}
 export class Game2 extends Game {
     static colorRange = {
         r: 0,
@@ -24,15 +16,11 @@ export class Game2 extends Game {
         b: 200
     };
     readonly timers = new TimerManager(1);
-    get controls(): Controls {
-        return this._controls as Controls;
-    }
-    private _controls: Controls | undefined;
 	constructor(config: GameConfig) {
 		super(config);
 
-		let go1 = new Player(10, 10, 'green', 100, 100);
-		let go2 = new Player(200, 200, 'orange', 100, 100);
+		let go1 = new Player(10, 10, 100, 100);
+		let go2 = new Player(200, 200, 100, 100);
 		
 		go1.transform.children.add(go2.transform);
 
@@ -55,21 +43,11 @@ export class Game2 extends Game {
             .add(this.timers);
 	}
 
-	initialization(input: InputManager) {
-        this._controls = {
-            left: input.keyboard.add(KeyCodes.LEFT_ARROW),
-            right: input.keyboard.add(KeyCodes.RIGHT_ARROW),
-            up: input.keyboard.add(KeyCodes.UP_ARROW),
-            down: input.keyboard.add(KeyCodes.DOWN_ARROW)
-        }
-		super.initialization(input);
-	}
+	preload() {
+		this.load.image('images', 'images.json', true);
+		this.load.audio('music', 'InterAct.mp3');
 
-	preload(assets: AssetBank) {
-		assets.load.image('images', 'images.json', true);
-		assets.load.audio('music', 'InterAct.mp3');
-
-    super.preload(assets);
+        super.preload();
 	}
 
   create() {
@@ -93,28 +71,7 @@ export class Game2 extends Game {
         
     }
     updateGrowingCircle() {
-        const controls = this.controls;
-        const pos = this.pos;
-        if (controls.left.axis === 1) {
-            console.log('left');
-            pos.x -= 1;
-            Game2.direction = 0;
-        }
-        if (controls.right.axis === 1) {
-            console.log('right');
-            pos.x += 1;
-            Game2.direction = 180;
-        }
-        if (controls.up.axis === 1) {
-            console.log('up');
-            pos.y -= 1;
-            Game2.direction = 90;
-        }
-        if (controls.down.axis === 1) {
-            console.log('down');
-            pos.y += 1;
-            Game2.direction = 270;
-        }
+
         Game2.direction = Mathf.wrap(Game2.direction + .1, 0, 360);
         
         if (Game2.colorRange.r > 200) {
@@ -144,11 +101,6 @@ export class Game2 extends Game {
         Game2.colorRange.r += (.1*this.dir.r);
         Game2.colorRange.g += (.1*this.dir.g);
         Game2.colorRange.b += (.1*this.dir.b);
-        let a = this.controls.left;
-        let balls = this.components.getByTag('growCirc');
-        if (a.axis !== 0 && balls.length < 25) {
-            this.createGrowingCircleRand();
-        }
     }
     createGrowingCircleRand(toAttach?: GrowingCircle) {
         let x = Math.random() * this.canvas.virtualWidth;

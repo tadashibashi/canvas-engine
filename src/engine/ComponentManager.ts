@@ -231,15 +231,22 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 		
 		this.onRemoved.unsubscribeAll();
 		if (destroyComponentsToo) {
-			this.components.forEach((component) => {
-				component.destroy();
-			});
+			const components = Array.from(this.components);
+			for (let i = 0; i < components.length; i++) {
+				components[i].destroy();
+			}
 		}
 		delete this.onAdded;
 		delete this.onRemoved;
 		delete this.components;
 		delete this.drawList;
 		super.destroy();
+	}
+
+	reset() {
+		this.components.forEach((component) => {
+
+		});
 	}
 
 }

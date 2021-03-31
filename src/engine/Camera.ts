@@ -1,8 +1,20 @@
 import { Transform } from "./Transform";
 
 export class Camera {
-  transform: Transform;
   constructor(x = 0, y = 0, z = 0) {
-    this.transform = new Transform(x, y, z);
+    this.position.x = x;
+    this.position.y = y;
+    this.position.z = z;
   }
+
+  position = {
+    x: 0,
+    y: 0,
+    z: 0
+  }
+
+  zoom = {
+    x: 1,
+    y: 1
+  };
 }

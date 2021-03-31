@@ -16,7 +16,8 @@ export class Tween {
 	private maxRepetitions = 0;
 	private currentRepetition = 0;
 	onDestroy: ((id: number)=>void)[] = [];
-	
+	destroyed = false;
+
 	constructor(public readonly id: number, private obj: any, props: string[] | string, endVals: number[] | number, duration: number, private tweenFunction: (t: number, b: number, c: number, d: number) => number) {
 		this.currentTime = 0;
 		if (Array.isArray(props) && Array.isArray(endVals)) {
@@ -51,14 +52,32 @@ export class Tween {
 		return this;
 	}
 
-	destroy() {
+	destroy = () => {
+		this.destroyed = true;
+		const obj = this.obj;
+		const startVals = this.startingValues;
+		const endVals = this.endVals;
+		if (this.isYoyo) {
+			this.props.forEach((prop, i) => {
+				obj[prop] = startVals[i];
+			});
+		} else {
+			this.props.forEach((prop, i) => {
+				obj[prop] = endVals[i];
+			});
+		}
+
+
 		this.onDestroy.forEach((fn) => {
 			fn(this.id);
 		});
 		this.onDestroy = [];
+		
 	}
 
 	update(gameTime: GameTime) {
+		if (this.destroyed) return;
+
 		if (!this.obj) { // Destroy this tween if the object no longer exists
 			this.destroy();
 			return;
@@ -120,7 +139,7 @@ export class Tween {
 			// NOT a Yoyo
 			// finish and destroy if past the duration
 			if (time === duration) { 
-				if (this.finish) {
+				if (this.finish) { // fire callback if exists
 					this.finish();
 				}
 				if (this.currentRepetition < this.maxRepetitions) {

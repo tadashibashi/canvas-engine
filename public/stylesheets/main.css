@@ -4,7 +4,7 @@ body, html {
 
 canvas {
 	padding: 0;
-	margin: 1em auto;
+	margin: 0;
 	display: block;
 	image-rendering: -moz-crisp-edges;
   image-rendering: -webkit-crisp-edges;
@@ -13,6 +13,9 @@ canvas {
 	position: absolute;
 }
 
+#container {
+	margin: 1em auto;
+}
 
 @font-face {
 	font-family: 'charybdis';
