@@ -58,7 +58,6 @@ export class DelegateGroup<K, F extends (...any: any[])=>void> {
 			delegate.unsubscribeAll();
 		});
 		delegates.clear();
-		delete this.delegates;
 	}
 
 	/**

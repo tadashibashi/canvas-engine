@@ -236,10 +236,7 @@ export class ComponentManager<T extends Component = Component> extends DrawableC
 				components[i].destroy();
 			}
 		}
-		delete this.onAdded;
-		delete this.onRemoved;
-		delete this.components;
-		delete this.drawList;
+
 		super.destroy();
 	}
 

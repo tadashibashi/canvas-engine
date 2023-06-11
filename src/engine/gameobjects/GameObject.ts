@@ -34,7 +34,6 @@ export class GameObject extends DrawableComponent {
 
 	destroy() {
 		this.components.destroy();
-		delete this.components;
 		super.destroy();
 	}
 }

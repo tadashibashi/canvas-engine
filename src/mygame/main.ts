@@ -16,14 +16,14 @@ export function init() {
 		[
 			{
 				directory: '/',
-				fileNames: ['Master Bank.bank', 'Master Bank.strings.bank', 'bank.fsb'],
+				fileNames: ['Master.bank', 'Master.strings.bank'],
 				url: 'banks/'
 			}
 		],
 		initLoadBanks: 
 		[
 			{ 
-				names: ['Master Bank.bank', 'Master Bank.strings.bank'],
+				names: ['Master.bank', 'Master.strings.bank'],
 				flags: FMOD.STUDIO_LOAD_BANK_FLAGS.NORMAL
 			}
 		],
@@ -36,7 +36,7 @@ export function init() {
 		height: 180,
 		pixelated: true,
 		audio: {
-			fmodConfig: fmodConfig,
+			fmodConfig,
 		}
 	}).start();
 }

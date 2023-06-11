@@ -75,11 +75,7 @@ export abstract class Component implements IDestroyable, IDebuggable, IAwakable,
 	destroy() {
 		this.onDestroy.send(this);
 		this.onDestroy.unsubscribeAll();
-		delete this.onDestroy;
 		this.onUpdateOrderChanged.unsubscribeAll();
-		delete this.onUpdateOrderChanged;
-		delete this.manager;
-		delete this.services;
 	}
 
 }

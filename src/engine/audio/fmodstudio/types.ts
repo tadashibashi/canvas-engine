@@ -24,7 +24,7 @@ export interface  FMODStudioConfig {
 		/**
 		 * Names, including file extension and virtual directory path if 
 		 * any set in the corresponding FMODPreloadFileData config. 
-		 * e.g. 'Master Bank.bank' or 'banks/Master Bank.strings.bank'
+		 * e.g. 'Master.bank' or 'Master.strings.bank'
 		 */
 		names: string[];
 		/**
@@ -71,7 +71,7 @@ export interface FMODPreloadFileData {
 	 */
 	directory: string;
 	/**
-	 * filename with extension. e.g. 'Master Bank.bank'
+	 * filename with extension. e.g. 'Master.bank'
 	 */
 	fileNames: string[];
 	/**

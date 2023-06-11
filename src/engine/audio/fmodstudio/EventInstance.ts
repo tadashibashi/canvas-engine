@@ -326,6 +326,5 @@ export class EventInstance implements IDestroyable {
 		if (stop) {
 			this.stop();
 		}
-		delete this.instance;
 	}
 }

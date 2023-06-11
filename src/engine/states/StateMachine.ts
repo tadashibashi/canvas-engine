@@ -157,10 +157,7 @@ export class StateMachine<T> extends Component {
       state.destroy();
     })
     this.states.clear();
-    delete this.states;
-    delete this.queue;
     this.onStateChanged.unsubscribeAll();
-    delete this.onStateChanged;
 
     super.destroy();
   }

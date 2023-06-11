@@ -29,8 +29,7 @@ module.exports = {
         terserOptions: {
           mangle: false,
           keep_classnames: undefined,
-          keep_fnames: false,
-          topLevel: true
+          keep_fnames: false
         }
       })
     ]

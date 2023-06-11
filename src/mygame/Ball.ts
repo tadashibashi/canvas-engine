@@ -154,13 +154,13 @@ export class Ball extends GameActor<Circle> {
       }
     }
 
-    const inst = fmod.playOneShot('event:/Bounce', 
-      {name: 'Material', value: Mathf.choose(0, 1,2)},
-      {name: 'PositionX', value: this.transform.getPosition().x/this.canvas.virtualWidth}
-    );
+    // const inst = fmod.playOneShot('event:/Bounce',
+    //   {name: 'Material', value: Mathf.choose(0, 1,2)},
+    //   {name: 'PositionX', value: this.transform.getPosition().x/this.canvas.virtualWidth}
+    // );
     this.scene.tweener.tweenTo({val: 0}, 'val', 2, .1, TweenFunctions.linear)
     .onStep((time, val, rep) => {
-      inst.setPitch(val);
+      //inst.setPitch(val);
     });
   }
 

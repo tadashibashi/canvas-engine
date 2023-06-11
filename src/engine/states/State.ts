@@ -61,7 +61,6 @@ export class State<T> {
 
   destroy() {
     this.events.destroy();
-    delete this.events;
   }
 }
 
