@@ -10,6 +10,6 @@ src/libraries/
 
 # Assets
 public/audio/banks/
-dist/
+dist/bundle.js
 CanvasEngineFMOD/
 TexturePacker/
